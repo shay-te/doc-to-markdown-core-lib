@@ -14,9 +14,6 @@ __pycache__/
 
 # TESTS
 /examples/**/outputs/
-# Large book corpus used for ad-hoc extractor benchmarking; copyrighted
-# material, not redistributable. Keep locally, don't commit.
-tests/test_data/books/
 
 # BUILD
 *.egg-info
