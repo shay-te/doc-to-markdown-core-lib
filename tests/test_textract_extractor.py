@@ -53,6 +53,19 @@ class TestTextractExtractor(unittest.TestCase):
             result.confidence, _PLAIN_TEXT_CONFIDENCE_DISCOUNT
         )
 
+    def test_unlink_oserror_is_swallowed(self):
+        # The temp-file cleanup is best-effort: a locked /tmp must not
+        # mask a successful extraction. ``os`` is imported lazily
+        # inside ``extract`` so we patch the global symbol instead of a
+        # module-level attribute.
+        textract_module = _make_textract(b'still ok')
+        with patch_module('textract', textract_module):
+            with mock.patch('os.unlink', side_effect=OSError('locked')):
+                result = TextractExtractor().extract(
+                    b'\xd0\xcf', FileType.DOC.value
+                )
+        self.assertEqual(result.markdown, 'still ok')
+
 
 if __name__ == '__main__':
     unittest.main()

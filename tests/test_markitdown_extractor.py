@@ -59,6 +59,19 @@ class TestMarkItDownExtractor(unittest.TestCase):
             with self.assertRaises(ValueError):
                 MarkItDownExtractor().extract(b'x', 'audio')
 
+    def test_unlink_oserror_is_swallowed(self):
+        # The temp-file cleanup is best-effort: a locked /tmp must not
+        # mask a successful conversion.
+        with patch_module('markitdown', _make_markitdown('# still ok')):
+            with mock.patch(
+                'doc_to_markdown_core_lib.data_layers.service.extractors.pdf.markitdown_extractor.os.unlink',
+                side_effect=OSError('locked'),
+            ):
+                result = MarkItDownExtractor().extract(
+                    b'%PDF', FileType.PDF.value
+                )
+        self.assertIn('# still ok', result.markdown)
+
 
 if __name__ == '__main__':
     unittest.main()
