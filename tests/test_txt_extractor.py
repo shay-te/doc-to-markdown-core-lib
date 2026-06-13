@@ -3,7 +3,7 @@ import unittest
 from doc_to_markdown_core_lib.data_layers.service.extractors.txt.txt_extractor import (
     TxtExtractor,
 )
-from doc_to_markdown_core_lib.data_layers.service.types import FileType
+from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
 
 
 class TestTxtExtractor(unittest.TestCase):

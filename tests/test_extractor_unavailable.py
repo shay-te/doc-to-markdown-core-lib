@@ -1,6 +1,8 @@
 import unittest
 
-from doc_to_markdown_core_lib.data_layers.service.types import ExtractorUnavailable
+from doc_to_markdown_core_lib.data_layers.service.extractor_unavailable import (
+    ExtractorUnavailable,
+)
 
 
 class TestExtractorUnavailable(unittest.TestCase):

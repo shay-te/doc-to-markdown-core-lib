@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from doc_to_markdown_core_lib.data_layers.service.types import FileType
+from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
 from tests.make_markdown_service import make_markdown_service
 from tests.stub_extractor import StubExtractor
 

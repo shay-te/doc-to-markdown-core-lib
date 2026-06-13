@@ -9,6 +9,22 @@ from core_lib.data_layers.service.service import Service
 from doc_to_markdown_core_lib.data_layers.service.candidate_selection_service import (
     CandidateSelectionService,
 )
+from doc_to_markdown_core_lib.data_layers.service.extraction_candidate import (
+    ExtractionCandidate,
+)
+from doc_to_markdown_core_lib.data_layers.service.extraction_result import (
+    ExtractionResult,
+)
+from doc_to_markdown_core_lib.data_layers.service.extractor import Extractor
+from doc_to_markdown_core_lib.data_layers.service.extractor_unavailable import (
+    ExtractorUnavailable,
+)
+from doc_to_markdown_core_lib.data_layers.service.extractors.doc.soffice_extractor import (
+    SofficeExtractor,
+)
+from doc_to_markdown_core_lib.data_layers.service.extractors.doc.textract_extractor import (
+    TextractExtractor,
+)
 from doc_to_markdown_core_lib.data_layers.service.extractors.docx.docx_extractor import (
     DocxExtractor,
 )
@@ -20,6 +36,9 @@ from doc_to_markdown_core_lib.data_layers.service.extractors.image.easyocr_extra
 )
 from doc_to_markdown_core_lib.data_layers.service.extractors.image.rapidocr_extractor import (
     RapidOcrExtractor,
+)
+from doc_to_markdown_core_lib.data_layers.service.extractors.image.tesseract_extractor import (
+    TesseractExtractor,
 )
 from doc_to_markdown_core_lib.data_layers.service.extractors.md.md_extractor import (
     MdExtractor,
@@ -33,35 +52,20 @@ from doc_to_markdown_core_lib.data_layers.service.extractors.pdf.pdfminer_extrac
 from doc_to_markdown_core_lib.data_layers.service.extractors.pdf.pdfplumber_extractor import (
     PdfPlumberExtractor,
 )
-from doc_to_markdown_core_lib.data_layers.service.extractors.pdf.pymupdf_extractor import (
-    PyMuPdfExtractor,
-)
 from doc_to_markdown_core_lib.data_layers.service.extractors.pdf.pymupdf4llm_extractor import (
     PyMuPdf4LlmExtractor,
+)
+from doc_to_markdown_core_lib.data_layers.service.extractors.pdf.pymupdf_extractor import (
+    PyMuPdfExtractor,
 )
 from doc_to_markdown_core_lib.data_layers.service.extractors.pdf.pypdf_extractor import (
     PypdfExtractor,
 )
-from doc_to_markdown_core_lib.data_layers.service.extractors.doc.soffice_extractor import (
-    SofficeExtractor,
-)
-from doc_to_markdown_core_lib.data_layers.service.extractors.image.tesseract_extractor import (
-    TesseractExtractor,
-)
-from doc_to_markdown_core_lib.data_layers.service.extractors.doc.textract_extractor import (
-    TextractExtractor,
-)
 from doc_to_markdown_core_lib.data_layers.service.extractors.txt.txt_extractor import (
     TxtExtractor,
 )
+from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
 from doc_to_markdown_core_lib.data_layers.service.tier_detector import detect_tier
-from doc_to_markdown_core_lib.data_layers.service.types import (
-    ExtractionCandidate,
-    ExtractionResult,
-    Extractor,
-    ExtractorUnavailable,
-    FileType,
-)
 
 logger = logging.getLogger(__name__)
 

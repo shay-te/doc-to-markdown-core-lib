@@ -1,10 +1,12 @@
 from typing import List, Optional
 
-from doc_to_markdown_core_lib.data_layers.service.types import (
+from doc_to_markdown_core_lib.data_layers.service.extraction_candidate import (
     ExtractionCandidate,
-    ExtractorUnavailable,
-    FileType,
 )
+from doc_to_markdown_core_lib.data_layers.service.extractor_unavailable import (
+    ExtractorUnavailable,
+)
+from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
 
 
 class StubExtractor(object):

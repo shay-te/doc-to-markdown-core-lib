@@ -1,6 +1,8 @@
 import unittest
 
-from doc_to_markdown_core_lib.data_layers.service.types import ExtractionResult
+from doc_to_markdown_core_lib.data_layers.service.extraction_result import (
+    ExtractionResult,
+)
 
 
 class TestExtractionResult(unittest.TestCase):

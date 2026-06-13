@@ -1,6 +1,6 @@
 """Pre-flight tiering. ``clean`` → one engine is enough; ``risky``
 → run the full ensemble. PyMuPDF missing → PDFs default to ``risky``."""
-from doc_to_markdown_core_lib.data_layers.service.types import FileType
+from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
 
 _TEXT_LAYER_CHAR_FLOOR = 100  # avg chars/page above this → clean
 

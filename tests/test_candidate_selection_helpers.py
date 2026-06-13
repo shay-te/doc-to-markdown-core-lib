@@ -6,7 +6,9 @@ from doc_to_markdown_core_lib.data_layers.service.candidate_selection_service im
     _strip_bom,
     _union_languages,
 )
-from doc_to_markdown_core_lib.data_layers.service.types import ExtractionCandidate
+from doc_to_markdown_core_lib.data_layers.service.extraction_candidate import (
+    ExtractionCandidate,
+)
 
 
 class TestCandidateSelectionHelpers(unittest.TestCase):

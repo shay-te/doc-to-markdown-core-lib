@@ -4,14 +4,14 @@ import types
 import unittest
 from unittest import mock
 
+from doc_to_markdown_core_lib.data_layers.service.extractor_unavailable import (
+    ExtractorUnavailable,
+)
 from doc_to_markdown_core_lib.data_layers.service.extractors.doc.textract_extractor import (
     TextractExtractor,
     _PLAIN_TEXT_CONFIDENCE_DISCOUNT,
 )
-from doc_to_markdown_core_lib.data_layers.service.types import (
-    ExtractorUnavailable,
-    FileType,
-)
+from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
 from tests.patch_module import patch_module
 
 

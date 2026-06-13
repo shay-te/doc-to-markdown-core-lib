@@ -2,8 +2,8 @@ import sys
 import unittest
 from unittest import mock
 
+from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
 from doc_to_markdown_core_lib.data_layers.service.tier_detector import detect_tier
-from doc_to_markdown_core_lib.data_layers.service.types import FileType
 from tests.make_fitz_module import make_fitz_module
 
 

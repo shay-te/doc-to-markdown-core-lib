@@ -11,8 +11,10 @@ from typing import List, Optional
 
 from core_lib.data_layers.service.service import Service
 
-from doc_to_markdown_core_lib.data_layers.service.types import (
+from doc_to_markdown_core_lib.data_layers.service.extraction_candidate import (
     ExtractionCandidate,
+)
+from doc_to_markdown_core_lib.data_layers.service.extraction_result import (
     ExtractionResult,
 )
 

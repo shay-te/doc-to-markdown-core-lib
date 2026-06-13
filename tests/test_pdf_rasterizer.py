@@ -2,11 +2,13 @@ import sys
 import unittest
 from unittest import mock
 
+from doc_to_markdown_core_lib.data_layers.service.extractor_unavailable import (
+    ExtractorUnavailable,
+)
 from doc_to_markdown_core_lib.data_layers.service.extractors.image.pdf_rasterizer import (
     DEFAULT_RASTER_DPI,
     rasterize_pdf_pages,
 )
-from doc_to_markdown_core_lib.data_layers.service.types import ExtractorUnavailable
 from tests.make_fitz_module import make_fitz_module
 
 

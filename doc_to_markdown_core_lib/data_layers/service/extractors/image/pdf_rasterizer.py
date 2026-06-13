@@ -1,7 +1,7 @@
 """Shared PDF → page-PNG rasterization for the OCR extractors."""
 from typing import Iterator, Tuple
 
-from doc_to_markdown_core_lib.data_layers.service.types import (
+from doc_to_markdown_core_lib.data_layers.service.extractor_unavailable import (
     ExtractorUnavailable,
 )
 

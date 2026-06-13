@@ -1,7 +1,7 @@
 import unittest
 
+from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
 from doc_to_markdown_core_lib.data_layers.service.tier_detector import detect_tier
-from doc_to_markdown_core_lib.data_layers.service.types import FileType
 
 
 class TestTierDetectorSimpleTypes(unittest.TestCase):
