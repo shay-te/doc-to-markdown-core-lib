@@ -9,7 +9,8 @@ from doc_to_markdown_core_lib.data_layers.service.types import (
     ExtractorUnavailable,
     FileType,
 )
-from tests.fakes import make_fitz_module, patch_module
+from tests.make_fitz_module import make_fitz_module
+from tests.patch_module import patch_module
 
 
 class TestPyMuPdfExtractor(unittest.TestCase):

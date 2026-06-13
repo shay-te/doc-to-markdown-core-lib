@@ -11,7 +11,8 @@ from doc_to_markdown_core_lib.data_layers.service.types import (
     ExtractorUnavailable,
     FileType,
 )
-from tests.fakes import make_mammoth_module, patch_module
+from tests.make_mammoth_module import make_mammoth_module
+from tests.patch_module import patch_module
 
 _SOFFICE_MODULE = (
     'doc_to_markdown_core_lib.data_layers.service.extractors.doc.soffice_extractor'

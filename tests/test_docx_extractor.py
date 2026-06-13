@@ -10,7 +10,7 @@ from doc_to_markdown_core_lib.data_layers.service.types import (
     ExtractorUnavailable,
     FileType,
 )
-from tests.fakes import patch_module
+from tests.patch_module import patch_module
 
 
 def _make_docx(paragraphs, tables=None):

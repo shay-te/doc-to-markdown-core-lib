@@ -10,7 +10,8 @@ from doc_to_markdown_core_lib.data_layers.service.types import (
     ExtractorUnavailable,
     FileType,
 )
-from tests.fakes import make_fitz_module, make_pil_modules
+from tests.make_fitz_module import make_fitz_module
+from tests.make_pil_modules import make_pil_modules
 
 
 def _make_pytesseract(text='ocr text'):

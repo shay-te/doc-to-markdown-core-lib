@@ -4,7 +4,7 @@ from unittest import mock
 
 from doc_to_markdown_core_lib.data_layers.service.tier_detector import detect_tier
 from doc_to_markdown_core_lib.data_layers.service.types import FileType
-from tests.fakes import make_fitz_module
+from tests.make_fitz_module import make_fitz_module
 
 
 class TestTierDetectorPdf(unittest.TestCase):

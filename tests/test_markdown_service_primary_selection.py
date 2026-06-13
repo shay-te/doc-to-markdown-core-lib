@@ -2,7 +2,8 @@ import unittest
 from unittest import mock
 
 from doc_to_markdown_core_lib.data_layers.service.types import FileType
-from tests.fakes import StubExtractor, make_markdown_service
+from tests.make_markdown_service import make_markdown_service
+from tests.stub_extractor import StubExtractor
 
 
 class TestMarkdownServicePrimarySelection(unittest.TestCase):
