@@ -165,9 +165,9 @@ def _agreement(candidates: List[ExtractionCandidate]) -> float:
     ]
     pairs = 0
     total = 0.0
-    for i in range(len(token_sets)):
-        for j in range(i + 1, len(token_sets)):
-            left, right = token_sets[i], token_sets[j]
+    for left_index in range(len(token_sets)):
+        for right_index in range(left_index + 1, len(token_sets)):
+            left, right = token_sets[left_index], token_sets[right_index]
             if not left and not right:
                 continue
             union = len(left | right)

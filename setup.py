@@ -2,19 +2,23 @@ import os
 
 import setuptools
 
-# doc_to_markdown_core_lib_import
-
 from setuptools import find_namespace_packages, setup
 from pip._internal.network.session import PipSession
 from pip._internal.req import parse_requirements
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-install_reqs = parse_requirements(os.path.join(dir_path, 'requirements.txt'), session=PipSession)
-requirements = []
-try:
-    requirements = [str(ir.req) for ir in install_reqs]
-except:
-    requirements = [str(ir.requirement) for ir in install_reqs]
+
+
+def _read_requirements(name):
+    install_reqs = parse_requirements(os.path.join(dir_path, name), session=PipSession)
+    try:
+        return [str(ir.req) for ir in install_reqs]
+    except Exception:
+        install_reqs = parse_requirements(os.path.join(dir_path, name), session=PipSession)
+        return [str(ir.requirement) for ir in install_reqs]
+
+
+requirements = _read_requirements('requirements.txt')
 
 packages1 = setuptools.find_packages()
 packages2 = find_namespace_packages(include=['hydra_plugins.*'])
@@ -25,16 +29,15 @@ with open('README.md', 'r') as fh:
 
     setup(
         name='doc_to_markdown_core_lib',
-        # doc_to_markdown_core_lib_version
-        author='doc_to_markdown_full_name',
-        author_email='doc_to_markdown_email',
-        description='doc_to_markdown_description',
+        version='0.1.0',
+        author='Una',
+        author_email='dev@una.example',
+        description='Multi-extractor document-to-markdown conversion core-lib with candidate voting',
         long_description=long_description,
         long_description_content_type='text/markdown',
-        url='doc_to_markdown_url',
+        url='',
         packages=packages,
-        license='doc_to_markdown_license',
-        # doc_to_markdown_classifiers
+        license='MIT',
         install_requires=requirements,
         include_package_data=True,
         python_requires='>=3.7',
