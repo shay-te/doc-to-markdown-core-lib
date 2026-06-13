@@ -12,6 +12,7 @@ from doc_to_markdown_core_lib.data_layers.service.extractors.pdf.markitdown_extr
 )
 from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
 from tests.patch_module import patch_module
+from tests.read_fixture import read_fixture
 
 
 def _make_markitdown(text_content):
@@ -41,7 +42,9 @@ class TestMarkItDownExtractor(unittest.TestCase):
     def test_pdf_happy_path_and_temp_cleanup(self):
         markitdown_module = _make_markitdown('# converted')
         with patch_module('markitdown', markitdown_module):
-            result = MarkItDownExtractor().extract(b'%PDF', FileType.PDF.value)
+            result = MarkItDownExtractor().extract(
+                read_fixture('sample.pdf'), FileType.PDF.value
+            )
         self.assertIn('# converted', result.markdown)
         converted_path = markitdown_module.MarkItDown.last_converted_path
         self.assertTrue(converted_path.endswith(f'.{FileType.PDF.value}'))
@@ -50,7 +53,9 @@ class TestMarkItDownExtractor(unittest.TestCase):
     def test_docx_uses_docx_suffix(self):
         markitdown_module = _make_markitdown('docx body')
         with patch_module('markitdown', markitdown_module):
-            MarkItDownExtractor().extract(b'PK', FileType.DOCX.value)
+            MarkItDownExtractor().extract(
+                read_fixture('sample.docx'), FileType.DOCX.value
+            )
         converted_path = markitdown_module.MarkItDown.last_converted_path
         self.assertTrue(converted_path.endswith(f'.{FileType.DOCX.value}'))
 

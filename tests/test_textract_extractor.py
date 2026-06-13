@@ -13,6 +13,7 @@ from doc_to_markdown_core_lib.data_layers.service.extractors.doc.textract_extrac
 )
 from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
 from tests.patch_module import patch_module
+from tests.read_fixture import read_fixture
 
 
 def _make_textract(process_result: bytes):
@@ -41,7 +42,9 @@ class TestTextractExtractor(unittest.TestCase):
     def test_docx_uses_docx_suffix(self):
         textract_module = _make_textract(b'docx body')
         with patch_module('textract', textract_module):
-            TextractExtractor().extract(b'PK', FileType.DOCX.value)
+            TextractExtractor().extract(
+                read_fixture('sample.docx'), FileType.DOCX.value
+            )
         processed_path = textract_module.process.call_args.args[0]
         self.assertTrue(processed_path.endswith(f'.{FileType.DOCX.value}'))
 
