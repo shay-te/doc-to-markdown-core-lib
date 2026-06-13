@@ -30,8 +30,8 @@ with open('README.md', 'r') as fh:
     setup(
         name='doc_to_markdown_core_lib',
         version='0.1.0',
-        author='Una',
-        author_email='dev@una.example',
+        author='doc-to-markdown-core-lib contributors',
+        author_email='',
         description='Multi-extractor document-to-markdown conversion core-lib with candidate voting',
         long_description=long_description,
         long_description_content_type='text/markdown',
