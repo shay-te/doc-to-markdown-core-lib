@@ -1,0 +1,15 @@
+# @package _global_
+#
+# Every value is sourced from an environment variable so deployments
+# can override anything without forking the yaml. The shape is
+# ``${oc.env:DOC_TO_MARKDOWN_<KEY>,<default>}`` — the default after
+# the comma is used when the env var is unset.
+#
+core_lib:
+  extraction:
+    ocr_languages:                    # Tesseract language packs to load (host must have them installed)
+      - ${oc.env:DOC_TO_MARKDOWN_OCR_LANG_1,eng}
+      - ${oc.env:DOC_TO_MARKDOWN_OCR_LANG_2,heb}
+      - ${oc.env:DOC_TO_MARKDOWN_OCR_LANG_3,ara}
+      - ${oc.env:DOC_TO_MARKDOWN_OCR_LANG_4,chi_sim}
+    confidence_threshold: ${oc.env:DOC_TO_MARKDOWN_CONFIDENCE_THRESHOLD,0.8}

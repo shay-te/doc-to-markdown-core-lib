@@ -1,0 +1,2 @@
+Plain-text fixture for txt extractor tests.
+Line two.
