@@ -30,7 +30,7 @@ class TestPdfPlumberEmptyTableBranch(unittest.TestCase):
         plumber_module = types.ModuleType('pdfplumber')
         plumber_module.open = lambda file_object: _Pdf()
         with mock.patch.dict(sys.modules, {'pdfplumber': plumber_module}):
-            result = PdfPlumberExtractor().extract(b'%PDF', FileType.PDF.value)
+            result = PdfPlumberExtractor().extract(b'%PDF', FileType.PDF)
         self.assertIn('body', result.markdown)
         self.assertNotIn('|', result.markdown)
 

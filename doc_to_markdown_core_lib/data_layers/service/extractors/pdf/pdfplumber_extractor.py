@@ -15,9 +15,9 @@ class PdfPlumberExtractor(Extractor):
     """Strong text-layer engine for table-heavy PDFs."""
 
     name = 'pdfplumber'
-    file_types = (FileType.PDF.value,)
+    file_types = (FileType.PDF,)
 
-    def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
+    def extract(self, content: bytes, file_type: FileType) -> ExtractionCandidate:
         try:
             import io
 

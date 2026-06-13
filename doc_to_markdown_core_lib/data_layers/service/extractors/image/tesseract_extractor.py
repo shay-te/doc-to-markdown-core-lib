@@ -20,13 +20,13 @@ class TesseractExtractor(Extractor):
     PDFs are rasterized via PyMuPDF; missing PyMuPDF → unavailable."""
 
     name = 'tesseract'
-    file_types = (FileType.PDF.value, FileType.IMAGE.value)
+    file_types = (FileType.PDF, FileType.IMAGE)
 
     def __init__(self, languages: Optional[List[str]] = None, dpi: int = 200):
         self._languages = list(languages or ['eng'])
         self._dpi = dpi
 
-    def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
+    def extract(self, content: bytes, file_type: FileType) -> ExtractionCandidate:
         try:
             import io
 
@@ -39,7 +39,7 @@ class TesseractExtractor(Extractor):
 
         lang_arg = '+'.join(self._languages)
 
-        if file_type == FileType.IMAGE.value:
+        if file_type == FileType.IMAGE:
             img = Image.open(io.BytesIO(content))
             text = (pytesseract.image_to_string(img, lang=lang_arg) or '').strip()
             confidence = min(
@@ -53,7 +53,7 @@ class TesseractExtractor(Extractor):
                 languages=list(self._languages),
             )
 
-        if file_type == FileType.PDF.value:
+        if file_type == FileType.PDF:
             try:
                 import fitz
             except ImportError as import_error:
@@ -62,7 +62,7 @@ class TesseractExtractor(Extractor):
                 ) from import_error
 
             parts = []
-            doc = fitz.open(stream=content, filetype=FileType.PDF.value)
+            doc = fitz.open(stream=content, filetype=FileType.PDF)
             try:
                 for page_number, page in enumerate(doc, start=1):
                     pix = page.get_pixmap(dpi=self._dpi)

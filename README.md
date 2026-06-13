@@ -85,15 +85,18 @@ its corpus.
 ```python
 import hydra
 from doc_to_markdown_core_lib import DocToMarkdownCoreLib
+from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
 
 hydra.core.global_hydra.GlobalHydra.instance().clear()
-hydra.initialize(config_path='../../doc_to_markdown_core_lib/config')
+hydra.initialize(
+    config_path='../../doc_to_markdown_core_lib/config', version_base=None
+)
 lib = DocToMarkdownCoreLib(hydra.compose('doc_to_markdown_core_lib.yaml'))
 
 with open('paper.pdf', 'rb') as file_handle:
     content = file_handle.read()
 
-result = lib.markdown_service.extract(content, file_type='pdf', filename='paper.pdf')
+result = lib.document.extract(content, file_type=FileType.PDF, filename='paper.pdf')
 
 print(result.markdown)                          # str — best-of-ensemble markdown
 print(result.report['winning_extractor'])       # str — name of the chosen extractor
@@ -124,9 +127,9 @@ from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
 
 class MyPdfExtractor(Extractor):
     name = 'my-pdf'
-    file_types = (FileType.PDF.value,)
+    file_types = (FileType.PDF,)
 
-    def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
+    def extract(self, content: bytes, file_type: FileType) -> ExtractionCandidate:
         markdown = my_engine_convert(content)
         return ExtractionCandidate(
             extractor=self.name,
@@ -136,7 +139,7 @@ class MyPdfExtractor(Extractor):
         )
 
 
-lib.markdown_service.register(MyPdfExtractor())
+lib.document.register(MyPdfExtractor())
 ```
 
 Raise `ExtractorUnavailable` from `extract` (typically inside the lazy import
@@ -160,10 +163,10 @@ This keeps the hot path cheap without hand-tuning per document.
 
 ```
 DocToMarkdownCoreLib                       # public surface, Hydra-configured
-└── markdown_service: MarkdownService       # orchestrator
-    ├── extractors:   list[Extractor]      # per-file_type engines
-    ├── tier_detector.detect_tier(...)     # clean vs. messy routing
-    └── selection_service: CandidateSelectionService  # candidate scoring & report assembly
+└── document: DocumentService               # only public service
+    ├── extractors:  list[Extractor]        # per-file_type engines
+    ├── tier_detector.detect_tier(...)      # clean vs. messy routing
+    └── selection_service: CandidateSelectionService  # injected; not exposed
 ```
 
 Each extractor lives under

@@ -29,7 +29,7 @@ class TestRapidOcrExtractor(unittest.TestCase):
     def test_unavailable_without_rapidocr(self):
         with mock.patch.dict(sys.modules, {'rapidocr_onnxruntime': None}):
             with self.assertRaises(ExtractorUnavailable):
-                RapidOcrExtractor().extract(b'\x89PNG', FileType.IMAGE.value)
+                RapidOcrExtractor().extract(b'\x89PNG', FileType.IMAGE)
 
     def test_image_happy_path(self):
         detections = [
@@ -37,13 +37,13 @@ class TestRapidOcrExtractor(unittest.TestCase):
             [[[0, 1]], 'second line', 0.91],
         ]
         with patch_module('rapidocr_onnxruntime', _make_rapidocr(detections)):
-            result = RapidOcrExtractor().extract(b'\x89PNG', FileType.IMAGE.value)
+            result = RapidOcrExtractor().extract(b'\x89PNG', FileType.IMAGE)
         self.assertEqual(result.markdown, 'first line\nsecond line')
         self.assertGreater(result.confidence, 0.0)
 
     def test_no_detections_yields_empty_candidate(self):
         with patch_module('rapidocr_onnxruntime', _make_rapidocr(None)):
-            result = RapidOcrExtractor().extract(b'\x89PNG', FileType.IMAGE.value)
+            result = RapidOcrExtractor().extract(b'\x89PNG', FileType.IMAGE)
         self.assertEqual(result.markdown, '')
         self.assertEqual(result.confidence, 0.0)
 
@@ -56,7 +56,7 @@ class TestRapidOcrExtractor(unittest.TestCase):
                 'fitz': make_fitz_module(pages_text=['']),
             },
         ):
-            result = RapidOcrExtractor().extract(b'%PDF', FileType.PDF.value)
+            result = RapidOcrExtractor().extract(b'%PDF', FileType.PDF)
         self.assertIn('scanned text', result.markdown)
         self.assertIn('page 1', result.markdown)
 

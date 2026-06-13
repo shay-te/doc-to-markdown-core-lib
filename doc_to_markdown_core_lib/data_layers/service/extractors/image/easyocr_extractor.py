@@ -26,7 +26,7 @@ class EasyOcrExtractor(Extractor):
     language config. PDFs are rasterized via PyMuPDF."""
 
     name = 'easyocr'
-    file_types = (FileType.PDF.value, FileType.IMAGE.value)
+    file_types = (FileType.PDF, FileType.IMAGE)
 
     def __init__(
         self,
@@ -36,7 +36,7 @@ class EasyOcrExtractor(Extractor):
         self._languages = list(languages or ['en'])
         self._dpi = dpi
 
-    def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
+    def extract(self, content: bytes, file_type: FileType) -> ExtractionCandidate:
         try:
             import easyocr
         except ImportError as import_error:
@@ -51,7 +51,7 @@ class EasyOcrExtractor(Extractor):
                 f'easyocr reader init failed: {reader_error}'
             ) from reader_error
 
-        if file_type == FileType.IMAGE.value:
+        if file_type == FileType.IMAGE:
             text = self._read_image(reader, content)
             confidence = min(
                 1.0,
@@ -64,7 +64,7 @@ class EasyOcrExtractor(Extractor):
                 languages=list(self._languages),
             )
 
-        if file_type == FileType.PDF.value:
+        if file_type == FileType.PDF:
             parts = []
             for page_number, png_bytes in rasterize_pdf_pages(
                 content, dpi=self._dpi

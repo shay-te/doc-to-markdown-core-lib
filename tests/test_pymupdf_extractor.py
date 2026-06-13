@@ -19,13 +19,13 @@ class TestPyMuPdfExtractor(unittest.TestCase):
         with mock.patch.dict(sys.modules, {'fitz': None}):
             with self.assertRaises(ExtractorUnavailable):
                 PyMuPdfExtractor().extract(
-                    read_fixture('sample.pdf'), FileType.PDF.value
+                    read_fixture('sample.pdf'), FileType.PDF
                 )
 
     def test_happy_path(self):
         with patch_module('fitz', make_fitz_module(['page one text', 'page two text'])):
             result = PyMuPdfExtractor().extract(
-                read_fixture('sample.pdf'), FileType.PDF.value
+                read_fixture('sample.pdf'), FileType.PDF
             )
         self.assertIn('page one text', result.markdown)
         self.assertIn('page two text', result.markdown)
@@ -37,7 +37,7 @@ class TestPyMuPdfExtractor(unittest.TestCase):
         with patch_module('fitz', make_fitz_module(open_raises=Exception('broken'))):
             with self.assertRaises(RuntimeError):
                 PyMuPdfExtractor().extract(
-                    read_fixture('sample.pdf'), FileType.PDF.value
+                    read_fixture('sample.pdf'), FileType.PDF
                 )
 
 

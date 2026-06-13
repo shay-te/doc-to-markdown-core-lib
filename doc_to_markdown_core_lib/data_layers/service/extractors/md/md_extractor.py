@@ -9,9 +9,9 @@ class MdExtractor(Extractor):
     """Pass-through for already-markdown sources."""
 
     name = 'md-passthrough'
-    file_types = (FileType.MD.value,)
+    file_types = (FileType.MD,)
 
-    def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
+    def extract(self, content: bytes, file_type: FileType) -> ExtractionCandidate:
         # utf-8-sig strips a leading BOM if present.
         text = content.decode('utf-8-sig')
         return ExtractionCandidate(

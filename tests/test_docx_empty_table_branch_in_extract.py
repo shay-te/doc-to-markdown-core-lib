@@ -30,7 +30,7 @@ class TestDocxEmptyTableBranchInExtract(unittest.TestCase):
 
         docx_module.Document = _FakeDoc
         with mock.patch.dict(sys.modules, {'docx': docx_module}):
-            result = DocxExtractor().extract(b'PK', FileType.DOCX.value)
+            result = DocxExtractor().extract(b'PK', FileType.DOCX)
         self.assertEqual(result.markdown, 'body')
 
 

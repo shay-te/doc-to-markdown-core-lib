@@ -1,6 +1,7 @@
-"""Orchestrator. Knows which extractors to run for each file_type and
-which to skip in the clean PDF tier. Delegates the choose-a-winner
-work to :class:`CandidateSelectionService`."""
+"""Document-extraction orchestrator. Knows which extractors to run
+for each :class:`FileType` and which to skip in the clean PDF tier.
+Delegates the choose-a-winner work to the :class:`CandidateSelectionService`
+handed in at construction time."""
 import logging
 from typing import List, Optional, Tuple
 
@@ -71,17 +72,27 @@ logger = logging.getLogger(__name__)
 
 
 _PRIMARY_PER_TYPE = {
-    FileType.PDF.value: 'pymupdf',
-    FileType.DOCX.value: 'python-docx',
-    FileType.DOC.value: 'soffice',
-    FileType.TXT.value: 'plain-text',
-    FileType.MD.value: 'md-passthrough',
+    FileType.PDF: 'pymupdf',
+    FileType.DOCX: 'python-docx',
+    FileType.DOC: 'soffice',
+    FileType.TXT: 'plain-text',
+    FileType.MD: 'md-passthrough',
 }
 
 
-class MarkdownService(Service):
-    """Runs the per-file_type extractor set, hands the candidates to
-    the selection service."""
+class DocumentService(Service):
+    """Single public surface of the library.
+
+    :meth:`extract` is the whole flow: take document bytes + their
+    :class:`FileType`, fan them out across every applicable extractor
+    (e.g. a PDF goes to PyMuPDF, pdfplumber, pdfminer, pypdf, pymupdf4llm,
+    markitdown, plus OCR), collect every candidate markdown, hand the
+    candidates to the injected :class:`CandidateSelectionService` for
+    voting, and return the winning markdown plus the report that
+    explains the choice.
+
+    Callers do not see the selection service directly — it's an
+    implementation detail of the document-extraction flow."""
 
     DEFAULT_OCR_LANGUAGES = ('eng', 'heb', 'ara', 'chi_sim')
 
@@ -129,21 +140,20 @@ class MarkdownService(Service):
     def extract(
         self,
         content: bytes,
-        file_type: str,
+        file_type: FileType,
         *,
         filename: Optional[str] = None,
     ) -> ExtractionResult:
-        normalized_file_type = (file_type or '').lower()
-        tier = detect_tier(content, normalized_file_type)
+        tier = detect_tier(content, file_type)
 
-        selected = self._select(normalized_file_type, tier)
+        selected = self._select(file_type, tier)
         candidates: List[ExtractionCandidate] = []
         used: List[str] = []
         skipped: List[dict] = []
 
         for extractor in selected:
             try:
-                candidate = extractor.extract(content, normalized_file_type)
+                candidate = extractor.extract(content, file_type)
             except ExtractorUnavailable as unavailable_error:
                 logger.info(
                     'extractor `%s` unavailable: %s',
@@ -184,7 +194,7 @@ class MarkdownService(Service):
             filename=filename,
         )
 
-    def _select(self, file_type: str, tier: str) -> List[Extractor]:
+    def _select(self, file_type: FileType, tier: str) -> List[Extractor]:
         matches = [
             extractor for extractor in self._extractors
             if file_type in extractor.file_types

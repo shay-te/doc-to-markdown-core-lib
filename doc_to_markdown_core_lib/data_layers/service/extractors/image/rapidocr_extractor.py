@@ -22,12 +22,12 @@ class RapidOcrExtractor(Extractor):
     PDFs are rasterized via PyMuPDF."""
 
     name = 'rapidocr'
-    file_types = (FileType.PDF.value, FileType.IMAGE.value)
+    file_types = (FileType.PDF, FileType.IMAGE)
 
     def __init__(self, dpi: int = DEFAULT_RASTER_DPI):
         self._dpi = dpi
 
-    def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
+    def extract(self, content: bytes, file_type: FileType) -> ExtractionCandidate:
         try:
             from rapidocr_onnxruntime import RapidOCR
         except ImportError as import_error:
@@ -37,7 +37,7 @@ class RapidOcrExtractor(Extractor):
 
         engine = RapidOCR()
 
-        if file_type == FileType.IMAGE.value:
+        if file_type == FileType.IMAGE:
             text = self._read_image(engine, content)
             confidence = min(
                 1.0,
@@ -50,7 +50,7 @@ class RapidOcrExtractor(Extractor):
                 languages=[],
             )
 
-        if file_type == FileType.PDF.value:
+        if file_type == FileType.PDF:
             parts = []
             for page_number, png_bytes in rasterize_pdf_pages(
                 content, dpi=self._dpi

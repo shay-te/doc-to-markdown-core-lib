@@ -17,9 +17,9 @@ class PyMuPdf4LlmExtractor(Extractor):
     text-layer engines flatten."""
 
     name = 'pymupdf4llm'
-    file_types = (FileType.PDF.value,)
+    file_types = (FileType.PDF,)
 
-    def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
+    def extract(self, content: bytes, file_type: FileType) -> ExtractionCandidate:
         try:
             import fitz
             import pymupdf4llm
@@ -28,7 +28,7 @@ class PyMuPdf4LlmExtractor(Extractor):
                 'pymupdf4llm (and PyMuPDF) not installed'
             ) from import_error
 
-        doc = fitz.open(stream=content, filetype=FileType.PDF.value)
+        doc = fitz.open(stream=content, filetype=FileType.PDF)
         try:
             markdown = (pymupdf4llm.to_markdown(doc) or '').strip()
         finally:

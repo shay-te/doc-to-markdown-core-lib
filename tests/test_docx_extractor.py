@@ -53,7 +53,7 @@ class TestDocxExtractor(unittest.TestCase):
     def test_unavailable_without_docx(self):
         with mock.patch.dict(sys.modules, {'docx': None}):
             with self.assertRaises(ExtractorUnavailable):
-                DocxExtractor().extract(b'PK', FileType.DOCX.value)
+                DocxExtractor().extract(b'PK', FileType.DOCX)
 
     def test_headings_lists_paragraphs_and_tables(self):
         paragraphs = [
@@ -67,7 +67,7 @@ class TestDocxExtractor(unittest.TestCase):
         ]
         tables = [[['A', 'B'], ['1', '2'], ['short']]]
         with patch_module('docx', _make_docx(paragraphs, tables)):
-            result = DocxExtractor().extract(b'PK', FileType.DOCX.value)
+            result = DocxExtractor().extract(b'PK', FileType.DOCX)
         markdown_text = result.markdown
         self.assertIn('# Title', markdown_text)
         self.assertIn('## Sub', markdown_text)
@@ -80,7 +80,7 @@ class TestDocxExtractor(unittest.TestCase):
 
     def test_no_paragraphs_yields_zero_confidence(self):
         with patch_module('docx', _make_docx([], [])):
-            result = DocxExtractor().extract(b'PK', FileType.DOCX.value)
+            result = DocxExtractor().extract(b'PK', FileType.DOCX)
         self.assertEqual(result.markdown, '')
         self.assertEqual(result.confidence, 0.0)
 

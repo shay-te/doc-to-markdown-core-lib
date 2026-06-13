@@ -21,9 +21,9 @@ class MarkItDownExtractor(Extractor):
     bytes take a temp-file round trip."""
 
     name = 'markitdown'
-    file_types = (FileType.PDF.value, FileType.DOCX.value)
+    file_types = (FileType.PDF, FileType.DOCX)
 
-    def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
+    def extract(self, content: bytes, file_type: FileType) -> ExtractionCandidate:
         try:
             from markitdown import MarkItDown
         except ImportError as import_error:
@@ -33,7 +33,7 @@ class MarkItDownExtractor(Extractor):
 
         if file_type not in self.file_types:
             raise ValueError(f'markitdown cannot handle file_type={file_type!r}')
-        suffix = f'.{file_type}'
+        suffix = f'.{file_type.value}'
 
         with tempfile.NamedTemporaryFile(
             suffix=suffix, delete=False

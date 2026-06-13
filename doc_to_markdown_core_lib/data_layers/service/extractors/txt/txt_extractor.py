@@ -9,9 +9,9 @@ class TxtExtractor(Extractor):
     """Plain-text source — try UTF variants, then fall back to latin-1."""
 
     name = 'plain-text'
-    file_types = (FileType.TXT.value,)
+    file_types = (FileType.TXT,)
 
-    def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
+    def extract(self, content: bytes, file_type: FileType) -> ExtractionCandidate:
         last_error = None
         for encoding in ('utf-8-sig', 'utf-8', 'utf-16', 'latin-1'):
             try:

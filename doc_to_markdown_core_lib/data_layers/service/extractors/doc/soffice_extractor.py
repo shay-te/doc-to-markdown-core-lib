@@ -30,14 +30,14 @@ class SofficeExtractor(Extractor):
     on PATH."""
 
     name = 'soffice'
-    file_types = (FileType.DOC.value, FileType.DOCX.value)
+    file_types = (FileType.DOC, FileType.DOCX)
 
-    def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
+    def extract(self, content: bytes, file_type: FileType) -> ExtractionCandidate:
         binary = shutil.which('soffice') or shutil.which('libreoffice')
         if binary is None:
             raise ExtractorUnavailable('soffice / libreoffice binary not found')
 
-        suffix = f'.{file_type}'
+        suffix = f'.{file_type.value}'
         with tempfile.TemporaryDirectory() as work_dir:
             input_path = os.path.join(work_dir, f'input{suffix}')
             with open(input_path, 'wb') as input_file:

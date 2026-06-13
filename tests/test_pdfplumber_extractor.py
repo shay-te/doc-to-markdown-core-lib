@@ -47,7 +47,7 @@ class TestPdfPlumberExtractor(unittest.TestCase):
     def test_unavailable_without_pdfplumber(self):
         with mock.patch.dict(sys.modules, {'pdfplumber': None}):
             with self.assertRaises(ExtractorUnavailable):
-                PdfPlumberExtractor().extract(b'%PDF', FileType.PDF.value)
+                PdfPlumberExtractor().extract(b'%PDF', FileType.PDF)
 
     def test_happy_path_with_tables(self):
         pages = [
@@ -58,7 +58,7 @@ class TestPdfPlumberExtractor(unittest.TestCase):
             _FakePdfPlumberPage('p2 body'),
         ]
         with patch_module('pdfplumber', _make_pdfplumber(pages)):
-            result = PdfPlumberExtractor().extract(b'%PDF', FileType.PDF.value)
+            result = PdfPlumberExtractor().extract(b'%PDF', FileType.PDF)
         self.assertIn('p1 body', result.markdown)
         self.assertIn('p2 body', result.markdown)
         self.assertIn('| A | B |', result.markdown)

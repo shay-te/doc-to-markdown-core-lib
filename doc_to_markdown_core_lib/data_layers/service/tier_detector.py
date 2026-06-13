@@ -4,19 +4,17 @@ from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
 
 _TEXT_LAYER_CHAR_FLOOR = 100  # avg chars/page above this → clean
 
+_CLEAN_TIER_TYPES = (FileType.TXT, FileType.MD, FileType.DOCX)
 
-def detect_tier(content: bytes, file_type: str) -> str:
+
+def detect_tier(content: bytes, file_type: FileType) -> str:
     """Return ``'clean'`` or ``'risky'``."""
-    normalized_file_type = (file_type or '').lower()
-    if normalized_file_type in (
-        FileType.TXT.value,
-        FileType.MD.value,
-        FileType.DOCX.value,
-    ):
+    # ``FileType`` is exhaustive, so the enum-strict signature removes
+    # the old string-era unknown-type fallback. Every member lands in
+    # one of the three branches below.
+    if file_type in _CLEAN_TIER_TYPES:
         return 'clean'
-    if normalized_file_type == FileType.IMAGE.value:
-        return 'risky'
-    if normalized_file_type == FileType.PDF.value:
+    if file_type == FileType.PDF:
         return _detect_pdf_tier(content)
     return 'risky'
 

@@ -16,9 +16,9 @@ class PdfMinerExtractor(Extractor):
     quirks (custom CMaps, non-standard glyphs) the others mis-parse."""
 
     name = 'pdfminer'
-    file_types = (FileType.PDF.value,)
+    file_types = (FileType.PDF,)
 
-    def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
+    def extract(self, content: bytes, file_type: FileType) -> ExtractionCandidate:
         try:
             import io
 

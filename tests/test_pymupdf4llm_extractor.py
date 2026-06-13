@@ -19,7 +19,7 @@ class TestPyMuPdf4LlmExtractor(unittest.TestCase):
             sys.modules, {'fitz': make_fitz_module(), 'pymupdf4llm': None}
         ):
             with self.assertRaises(ExtractorUnavailable):
-                PyMuPdf4LlmExtractor().extract(b'%PDF', FileType.PDF.value)
+                PyMuPdf4LlmExtractor().extract(b'%PDF', FileType.PDF)
 
     def test_happy_path_returns_native_markdown(self):
         pymupdf4llm_module = types.ModuleType('pymupdf4llm')
@@ -28,7 +28,7 @@ class TestPyMuPdf4LlmExtractor(unittest.TestCase):
             sys.modules,
             {'fitz': make_fitz_module(), 'pymupdf4llm': pymupdf4llm_module},
         ):
-            result = PyMuPdf4LlmExtractor().extract(b'%PDF', FileType.PDF.value)
+            result = PyMuPdf4LlmExtractor().extract(b'%PDF', FileType.PDF)
         self.assertIn('# Native', result.markdown)
         self.assertGreater(result.confidence, 0.0)
         pymupdf4llm_module.to_markdown.assert_called_once()
