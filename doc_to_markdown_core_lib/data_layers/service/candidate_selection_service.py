@@ -17,6 +17,7 @@ from doc_to_markdown_core_lib.data_layers.service.extraction_candidate import (
 from doc_to_markdown_core_lib.data_layers.service.extraction_result import (
     ExtractionResult,
 )
+from doc_to_markdown_core_lib.data_layers.service.tier import Tier
 
 
 _UNCERTAIN_RE = re.compile(
@@ -41,7 +42,7 @@ class CandidateSelectionService(Service):
         self,
         candidates: List[ExtractionCandidate],
         *,
-        tier: str,
+        tier: Tier,
         used: List[str],
         skipped: List[dict],
         filename: Optional[str],
@@ -118,7 +119,7 @@ class CandidateSelectionService(Service):
 
     def _build_empty_result(
         self,
-        tier: str,
+        tier: Tier,
         used: List[str],
         skipped: List[dict],
         filename: Optional[str],
