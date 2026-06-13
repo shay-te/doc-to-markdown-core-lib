@@ -16,9 +16,9 @@ class PyMuPdfExtractor(Extractor):
     OCR engines pick up the slack."""
 
     name = 'pymupdf'
-    file_types = (FileType.PDF.value,)
+    file_types = (FileType.PDF,)
 
-    def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
+    def extract(self, content: bytes, file_type: FileType) -> ExtractionCandidate:
         try:
             import fitz
         except ImportError as import_error:
@@ -27,7 +27,7 @@ class PyMuPdfExtractor(Extractor):
             ) from import_error
 
         try:
-            doc = fitz.open(stream=content, filetype=FileType.PDF.value)
+            doc = fitz.open(stream=content, filetype=FileType.PDF)
         except Exception as open_error:
             raise RuntimeError(
                 f'pymupdf failed to open document: {open_error}'

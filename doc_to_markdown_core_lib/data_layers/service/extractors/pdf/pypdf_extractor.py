@@ -17,9 +17,9 @@ class PypdfExtractor(Extractor):
     whitespace, which is exactly the diversity the vote wants."""
 
     name = 'pypdf'
-    file_types = (FileType.PDF.value,)
+    file_types = (FileType.PDF,)
 
-    def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
+    def extract(self, content: bytes, file_type: FileType) -> ExtractionCandidate:
         try:
             import io
 

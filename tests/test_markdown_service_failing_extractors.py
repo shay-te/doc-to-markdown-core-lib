@@ -9,13 +9,13 @@ class TestFailingExtractors(unittest.TestCase):
     def test_failing_extractor_does_not_drop_document(self):
         service = make_markdown_service(
             [
-                StubExtractor('boom', '', file_types=(FileType.PDF.value,), raises=True),
+                StubExtractor('boom', '', file_types=(FileType.PDF,), raises=True),
                 StubExtractor(
-                    'text', 'hello', confidence=0.9, file_types=(FileType.PDF.value,)
+                    'text', 'hello', confidence=0.9, file_types=(FileType.PDF,)
                 ),
             ],
         )
-        result = service.extract(b'%PDF', FileType.PDF.value)
+        result = service.extract(b'%PDF', FileType.PDF)
         self.assertEqual(result.markdown, 'hello')
         self.assertEqual(result.report['extractors_used'], ['text'])
         skipped_names = [
@@ -27,14 +27,14 @@ class TestFailingExtractors(unittest.TestCase):
         service = make_markdown_service(
             [
                 StubExtractor(
-                    'missing-lib', '', file_types=(FileType.PDF.value,), unavailable=True
+                    'missing-lib', '', file_types=(FileType.PDF,), unavailable=True
                 ),
                 StubExtractor(
-                    'text', 'hello', confidence=0.9, file_types=(FileType.PDF.value,)
+                    'text', 'hello', confidence=0.9, file_types=(FileType.PDF,)
                 ),
             ],
         )
-        result = service.extract(b'%PDF', FileType.PDF.value)
+        result = service.extract(b'%PDF', FileType.PDF)
         reasons = {
             entry['extractor']: entry['reason']
             for entry in result.report['extractors_skipped']
@@ -44,7 +44,7 @@ class TestFailingExtractors(unittest.TestCase):
 
     def test_no_candidates_returns_uncertain_marker(self):
         service = make_markdown_service([])
-        result = service.extract(b'%PDF', FileType.PDF.value)
+        result = service.extract(b'%PDF', FileType.PDF)
         self.assertIn('⚠️[UNCERTAIN', result.markdown)
         self.assertFalse(result.report['completeness_check'])
         self.assertTrue(result.report['needs_review'])

@@ -87,13 +87,15 @@ import hydra
 from doc_to_markdown_core_lib import DocToMarkdownCoreLib
 
 hydra.core.global_hydra.GlobalHydra.instance().clear()
-hydra.initialize(config_path='../../doc_to_markdown_core_lib/config')
+hydra.initialize(
+    config_path='../../doc_to_markdown_core_lib/config', version_base=None
+)
 lib = DocToMarkdownCoreLib(hydra.compose('doc_to_markdown_core_lib.yaml'))
 
 with open('paper.pdf', 'rb') as file_handle:
     content = file_handle.read()
 
-result = lib.markdown_service.extract(content, file_type='pdf', filename='paper.pdf')
+result = lib.markdown.extract(content, file_type='pdf', filename='paper.pdf')
 
 print(result.markdown)                          # str — best-of-ensemble markdown
 print(result.report['winning_extractor'])       # str — name of the chosen extractor
@@ -136,7 +138,7 @@ class MyPdfExtractor(Extractor):
         )
 
 
-lib.markdown_service.register(MyPdfExtractor())
+lib.markdown.register(MyPdfExtractor())
 ```
 
 Raise `ExtractorUnavailable` from `extract` (typically inside the lazy import
@@ -160,10 +162,11 @@ This keeps the hot path cheap without hand-tuning per document.
 
 ```
 DocToMarkdownCoreLib                       # public surface, Hydra-configured
-└── markdown_service: MarkdownService       # orchestrator
-    ├── extractors:   list[Extractor]      # per-file_type engines
-    ├── tier_detector.detect_tier(...)     # clean vs. messy routing
-    └── selection_service: CandidateSelectionService  # candidate scoring & report assembly
+├── markdown:  MarkdownService              # orchestrator
+│   ├── extractors:  list[Extractor]        # per-file_type engines
+│   ├── tier_detector.detect_tier(...)      # clean vs. messy routing
+│   └── selection_service                   # ↓ shared
+└── selection: CandidateSelectionService    # scoring & report assembly
 ```
 
 Each extractor lives under

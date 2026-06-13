@@ -37,13 +37,13 @@ class TestMarkItDownExtractor(unittest.TestCase):
     def test_unavailable_without_markitdown(self):
         with mock.patch.dict(sys.modules, {'markitdown': None}):
             with self.assertRaises(ExtractorUnavailable):
-                MarkItDownExtractor().extract(b'%PDF', FileType.PDF.value)
+                MarkItDownExtractor().extract(b'%PDF', FileType.PDF)
 
     def test_pdf_happy_path_and_temp_cleanup(self):
         markitdown_module = _make_markitdown('# converted')
         with patch_module('markitdown', markitdown_module):
             result = MarkItDownExtractor().extract(
-                read_fixture('sample.pdf'), FileType.PDF.value
+                read_fixture('sample.pdf'), FileType.PDF
             )
         self.assertIn('# converted', result.markdown)
         converted_path = markitdown_module.MarkItDown.last_converted_path
@@ -54,7 +54,7 @@ class TestMarkItDownExtractor(unittest.TestCase):
         markitdown_module = _make_markitdown('docx body')
         with patch_module('markitdown', markitdown_module):
             MarkItDownExtractor().extract(
-                read_fixture('sample.docx'), FileType.DOCX.value
+                read_fixture('sample.docx'), FileType.DOCX
             )
         converted_path = markitdown_module.MarkItDown.last_converted_path
         self.assertTrue(converted_path.endswith(f'.{FileType.DOCX.value}'))
@@ -73,7 +73,7 @@ class TestMarkItDownExtractor(unittest.TestCase):
                 side_effect=OSError('locked'),
             ):
                 result = MarkItDownExtractor().extract(
-                    b'%PDF', FileType.PDF.value
+                    b'%PDF', FileType.PDF
                 )
         self.assertIn('# still ok', result.markdown)
 

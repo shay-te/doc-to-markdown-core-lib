@@ -26,12 +26,12 @@ class TestTextractExtractor(unittest.TestCase):
     def test_unavailable_without_textract(self):
         with mock.patch.dict(sys.modules, {'textract': None}):
             with self.assertRaises(ExtractorUnavailable):
-                TextractExtractor().extract(b'\xd0\xcf', FileType.DOC.value)
+                TextractExtractor().extract(b'\xd0\xcf', FileType.DOC)
 
     def test_doc_happy_path_uses_doc_suffix(self):
         textract_module = _make_textract(b'legacy doc body')
         with patch_module('textract', textract_module):
-            result = TextractExtractor().extract(b'\xd0\xcf', FileType.DOC.value)
+            result = TextractExtractor().extract(b'\xd0\xcf', FileType.DOC)
         self.assertEqual(result.markdown, 'legacy doc body')
         self.assertGreater(result.confidence, 0.0)
         processed_path = textract_module.process.call_args.args[0]
@@ -43,7 +43,7 @@ class TestTextractExtractor(unittest.TestCase):
         textract_module = _make_textract(b'docx body')
         with patch_module('textract', textract_module):
             TextractExtractor().extract(
-                read_fixture('sample.docx'), FileType.DOCX.value
+                read_fixture('sample.docx'), FileType.DOCX
             )
         processed_path = textract_module.process.call_args.args[0]
         self.assertTrue(processed_path.endswith(f'.{FileType.DOCX.value}'))
@@ -51,7 +51,7 @@ class TestTextractExtractor(unittest.TestCase):
     def test_full_length_text_caps_at_discounted_confidence(self):
         long_text = ('word ' * 1000).encode('utf-8')
         with patch_module('textract', _make_textract(long_text)):
-            result = TextractExtractor().extract(b'\xd0\xcf', FileType.DOC.value)
+            result = TextractExtractor().extract(b'\xd0\xcf', FileType.DOC)
         self.assertAlmostEqual(
             result.confidence, _PLAIN_TEXT_CONFIDENCE_DISCOUNT
         )
@@ -65,7 +65,7 @@ class TestTextractExtractor(unittest.TestCase):
         with patch_module('textract', textract_module):
             with mock.patch('os.unlink', side_effect=OSError('locked')):
                 result = TextractExtractor().extract(
-                    b'\xd0\xcf', FileType.DOC.value
+                    b'\xd0\xcf', FileType.DOC
                 )
         self.assertEqual(result.markdown, 'still ok')
 

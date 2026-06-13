@@ -10,14 +10,14 @@ class TestMarkdownServiceEmptyCandidateSkip(unittest.TestCase):
         service = make_markdown_service(
             [
                 StubExtractor(
-                    'blank', '   ', confidence=0.5, file_types=(FileType.PDF.value,)
+                    'blank', '   ', confidence=0.5, file_types=(FileType.PDF,)
                 ),
                 StubExtractor(
-                    'text', 'real text', confidence=0.9, file_types=(FileType.PDF.value,)
+                    'text', 'real text', confidence=0.9, file_types=(FileType.PDF,)
                 ),
             ],
         )
-        result = service.extract(b'%PDF', FileType.PDF.value)
+        result = service.extract(b'%PDF', FileType.PDF)
         reasons = {
             entry['extractor']: entry['reason']
             for entry in result.report['extractors_skipped']

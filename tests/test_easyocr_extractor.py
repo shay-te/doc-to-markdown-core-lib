@@ -34,7 +34,7 @@ class TestEasyOcrExtractor(unittest.TestCase):
     def test_unavailable_without_easyocr(self):
         with mock.patch.dict(sys.modules, {'easyocr': None}):
             with self.assertRaises(ExtractorUnavailable):
-                EasyOcrExtractor().extract(b'\x89PNG', FileType.IMAGE.value)
+                EasyOcrExtractor().extract(b'\x89PNG', FileType.IMAGE)
 
     def test_reader_init_failure_is_unavailable(self):
         broken_module = _make_easyocr(
@@ -43,13 +43,13 @@ class TestEasyOcrExtractor(unittest.TestCase):
         with patch_module('easyocr', broken_module):
             with self.assertRaises(ExtractorUnavailable):
                 EasyOcrExtractor(languages=['he', 'ch_sim']).extract(
-                    b'\x89PNG', FileType.IMAGE.value
+                    b'\x89PNG', FileType.IMAGE
                 )
 
     def test_image_happy_path(self):
         with patch_module('easyocr', _make_easyocr(['hello', 'world'])):
             result = EasyOcrExtractor(languages=['en']).extract(
-                b'\x89PNG', FileType.IMAGE.value
+                b'\x89PNG', FileType.IMAGE
             )
         self.assertEqual(result.markdown, 'hello\nworld')
         self.assertEqual(result.languages, ['en'])
@@ -63,7 +63,7 @@ class TestEasyOcrExtractor(unittest.TestCase):
                 'fitz': make_fitz_module(pages_text=['', '']),
             },
         ):
-            result = EasyOcrExtractor().extract(b'%PDF', FileType.PDF.value)
+            result = EasyOcrExtractor().extract(b'%PDF', FileType.PDF)
         self.assertIn('page-ocr', result.markdown)
         self.assertIn('page 1', result.markdown)
         self.assertIn('page 2', result.markdown)
@@ -73,7 +73,7 @@ class TestEasyOcrExtractor(unittest.TestCase):
             sys.modules, {'easyocr': _make_easyocr(['x']), 'fitz': None}
         ):
             with self.assertRaises(ExtractorUnavailable):
-                EasyOcrExtractor().extract(b'%PDF', FileType.PDF.value)
+                EasyOcrExtractor().extract(b'%PDF', FileType.PDF)
 
     def test_unknown_file_type_raises_value_error(self):
         with patch_module('easyocr', _make_easyocr(['x'])):

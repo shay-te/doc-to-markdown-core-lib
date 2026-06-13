@@ -18,7 +18,7 @@ class TestPdfMinerExtractor(unittest.TestCase):
             sys.modules, {'pdfminer': None, 'pdfminer.high_level': None}
         ):
             with self.assertRaises(ExtractorUnavailable):
-                PdfMinerExtractor().extract(b'%PDF', FileType.PDF.value)
+                PdfMinerExtractor().extract(b'%PDF', FileType.PDF)
 
     def test_happy_path(self):
         high_level_module = types.ModuleType('pdfminer.high_level')
@@ -29,7 +29,7 @@ class TestPdfMinerExtractor(unittest.TestCase):
             sys.modules,
             {'pdfminer': pdfminer_module, 'pdfminer.high_level': high_level_module},
         ):
-            result = PdfMinerExtractor().extract(b'%PDF', FileType.PDF.value)
+            result = PdfMinerExtractor().extract(b'%PDF', FileType.PDF)
         self.assertEqual(result.markdown, 'extracted text from pdf')
 
 

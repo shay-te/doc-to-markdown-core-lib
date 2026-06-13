@@ -15,11 +15,11 @@ class TestMarkdownServiceRegister(unittest.TestCase):
             'host-engine',
             'host markdown',
             confidence=0.99,
-            file_types=(FileType.PDF.value,),
+            file_types=(FileType.PDF,),
         )
         service.register(host_extractor)
 
-        result = service.extract(b'%PDF', FileType.PDF.value)
+        result = service.extract(b'%PDF', FileType.PDF)
         self.assertEqual(result.markdown, 'host markdown')
 
 

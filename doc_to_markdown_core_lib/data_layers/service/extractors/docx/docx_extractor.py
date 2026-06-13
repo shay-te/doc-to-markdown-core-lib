@@ -13,9 +13,9 @@ class DocxExtractor(Extractor):
     for diverse interpretations of the same DOCX."""
 
     name = 'python-docx'
-    file_types = (FileType.DOCX.value,)
+    file_types = (FileType.DOCX,)
 
-    def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
+    def extract(self, content: bytes, file_type: FileType) -> ExtractionCandidate:
         try:
             import io
 

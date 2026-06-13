@@ -14,11 +14,11 @@ class TestFlaggedRegionParsing(unittest.TestCase):
                     'text',
                     f'before {marker} after',
                     confidence=0.95,
-                    file_types=(FileType.PDF.value,),
+                    file_types=(FileType.PDF,),
                 )
             ],
         )
-        result = service.extract(b'%PDF', FileType.PDF.value)
+        result = service.extract(b'%PDF', FileType.PDF)
         regions = result.report['flagged_regions']
         self.assertEqual(len(regions), 1)
         self.assertEqual(regions[0]['best_guess'], 'hello')

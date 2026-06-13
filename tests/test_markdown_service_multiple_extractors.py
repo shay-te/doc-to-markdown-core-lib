@@ -13,17 +13,17 @@ class TestMultipleExtractorsPickWinner(unittest.TestCase):
                     'a',
                     'apple banana',
                     confidence=0.7,
-                    file_types=(FileType.PDF.value,),
+                    file_types=(FileType.PDF,),
                 ),
                 StubExtractor(
                     'b',
                     'apple banana carrot',
                     confidence=0.9,
-                    file_types=(FileType.PDF.value,),
+                    file_types=(FileType.PDF,),
                 ),
             ],
         )
-        result = service.extract(b'%PDF', FileType.PDF.value)
+        result = service.extract(b'%PDF', FileType.PDF)
         self.assertEqual(result.markdown, 'apple banana carrot')
         self.assertEqual(result.report['winning_extractor'], 'b')
 
@@ -34,18 +34,18 @@ class TestMultipleExtractorsPickWinner(unittest.TestCase):
                     'a',
                     'apple banana carrot',
                     confidence=0.9,
-                    file_types=(FileType.PDF.value,),
+                    file_types=(FileType.PDF,),
                 ),
                 StubExtractor(
                     'b',
                     'zebra giraffe lion',
                     confidence=0.9,
-                    file_types=(FileType.PDF.value,),
+                    file_types=(FileType.PDF,),
                 ),
             ],
             confidence_threshold=0.8,
         )
-        result = service.extract(b'%PDF', FileType.PDF.value)
+        result = service.extract(b'%PDF', FileType.PDF)
         self.assertTrue(result.report['needs_review'])
 
 

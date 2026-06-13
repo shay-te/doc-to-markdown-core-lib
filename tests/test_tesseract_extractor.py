@@ -24,7 +24,7 @@ class TestTesseractExtractor(unittest.TestCase):
     def test_unavailable_without_pytesseract(self):
         with mock.patch.dict(sys.modules, {'pytesseract': None}):
             with self.assertRaises(ExtractorUnavailable):
-                TesseractExtractor().extract(b'\x89PNG', FileType.IMAGE.value)
+                TesseractExtractor().extract(b'\x89PNG', FileType.IMAGE)
 
     def test_image_happy_path(self):
         pytesseract_module = _make_pytesseract(text='hello from ocr')
@@ -38,7 +38,7 @@ class TestTesseractExtractor(unittest.TestCase):
             },
         ):
             result = TesseractExtractor(languages=['eng', 'heb']).extract(
-                b'\x89PNG', FileType.IMAGE.value
+                b'\x89PNG', FileType.IMAGE
             )
         self.assertEqual(result.markdown, 'hello from ocr')
         self.assertEqual(result.languages, ['eng', 'heb'])
@@ -61,7 +61,7 @@ class TestTesseractExtractor(unittest.TestCase):
                 'fitz': fitz_module,
             },
         ):
-            result = TesseractExtractor().extract(b'%PDF', FileType.PDF.value)
+            result = TesseractExtractor().extract(b'%PDF', FileType.PDF)
         self.assertIn('page-ocr', result.markdown)
         self.assertIn('page 1', result.markdown)
 
@@ -78,7 +78,7 @@ class TestTesseractExtractor(unittest.TestCase):
             },
         ):
             with self.assertRaises(ExtractorUnavailable):
-                TesseractExtractor().extract(b'%PDF', FileType.PDF.value)
+                TesseractExtractor().extract(b'%PDF', FileType.PDF)
 
     def test_unknown_file_type_raises_value_error(self):
         pytesseract_module = _make_pytesseract()

@@ -14,11 +14,11 @@ class TestSingleExtractorPath(unittest.TestCase):
                     'text',
                     'hello world',
                     confidence=0.95,
-                    file_types=(FileType.PDF.value,),
+                    file_types=(FileType.PDF,),
                 )
             ],
         )
-        result = service.extract(b'pdf-bytes', FileType.PDF.value)
+        result = service.extract(b'pdf-bytes', FileType.PDF)
         self.assertEqual(result.markdown, 'hello world')
         self.assertEqual(result.report['winning_extractor'], 'text')
         self.assertFalse(result.report['needs_review'])
@@ -29,11 +29,11 @@ class TestSingleExtractorPath(unittest.TestCase):
         service = make_markdown_service(
             [
                 StubExtractor(
-                    'text', sample, confidence=0.95, file_types=(FileType.PDF.value,)
+                    'text', sample, confidence=0.95, file_types=(FileType.PDF,)
                 )
             ],
         )
-        result = service.extract(b'pdf-bytes', FileType.PDF.value)
+        result = service.extract(b'pdf-bytes', FileType.PDF)
         self.assertEqual(result.markdown_bytes.decode('utf-8'), sample)
         decoded = json.loads(result.report_bytes.decode('utf-8'))
         self.assertEqual(decoded['languages_detected'], [])
@@ -45,12 +45,12 @@ class TestSingleExtractorPath(unittest.TestCase):
                     'text',
                     'hello',
                     confidence=0.9,
-                    file_types=(FileType.PDF.value,),
+                    file_types=(FileType.PDF,),
                     languages=['eng'],
                 )
             ],
         )
-        report = service.extract(b'x', FileType.PDF.value).report
+        report = service.extract(b'x', FileType.PDF).report
         self.assertIn('overall_confidence', report)
         self.assertIn('tier', report)
         self.assertIn('extractors_used', report)

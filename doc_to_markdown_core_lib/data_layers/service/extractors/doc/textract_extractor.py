@@ -22,9 +22,9 @@ class TextractExtractor(Extractor):
     so it loses to format-aware extractors when they're available."""
 
     name = 'textract'
-    file_types = (FileType.DOC.value, FileType.DOCX.value)
+    file_types = (FileType.DOC, FileType.DOCX)
 
-    def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
+    def extract(self, content: bytes, file_type: FileType) -> ExtractionCandidate:
         try:
             import tempfile
             import os
@@ -32,7 +32,7 @@ class TextractExtractor(Extractor):
         except ImportError as import_error:
             raise ExtractorUnavailable('textract not installed') from import_error
 
-        suffix = f'.{file_type}'
+        suffix = f'.{file_type.value}'
         with tempfile.NamedTemporaryFile(
             suffix=suffix, delete=False
         ) as temp_file:

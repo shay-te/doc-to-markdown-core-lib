@@ -71,11 +71,11 @@ logger = logging.getLogger(__name__)
 
 
 _PRIMARY_PER_TYPE = {
-    FileType.PDF.value: 'pymupdf',
-    FileType.DOCX.value: 'python-docx',
-    FileType.DOC.value: 'soffice',
-    FileType.TXT.value: 'plain-text',
-    FileType.MD.value: 'md-passthrough',
+    FileType.PDF: 'pymupdf',
+    FileType.DOCX: 'python-docx',
+    FileType.DOC: 'soffice',
+    FileType.TXT: 'plain-text',
+    FileType.MD: 'md-passthrough',
 }
 
 
@@ -129,21 +129,20 @@ class MarkdownService(Service):
     def extract(
         self,
         content: bytes,
-        file_type: str,
+        file_type: FileType,
         *,
         filename: Optional[str] = None,
     ) -> ExtractionResult:
-        normalized_file_type = (file_type or '').lower()
-        tier = detect_tier(content, normalized_file_type)
+        tier = detect_tier(content, file_type)
 
-        selected = self._select(normalized_file_type, tier)
+        selected = self._select(file_type, tier)
         candidates: List[ExtractionCandidate] = []
         used: List[str] = []
         skipped: List[dict] = []
 
         for extractor in selected:
             try:
-                candidate = extractor.extract(content, normalized_file_type)
+                candidate = extractor.extract(content, file_type)
             except ExtractorUnavailable as unavailable_error:
                 logger.info(
                     'extractor `%s` unavailable: %s',
@@ -184,7 +183,7 @@ class MarkdownService(Service):
             filename=filename,
         )
 
-    def _select(self, file_type: str, tier: str) -> List[Extractor]:
+    def _select(self, file_type: FileType, tier: str) -> List[Extractor]:
         matches = [
             extractor for extractor in self._extractors
             if file_type in extractor.file_types

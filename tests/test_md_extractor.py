@@ -9,13 +9,13 @@ from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
 class TestMdExtractor(unittest.TestCase):
     def test_pass_through_utf8(self):
         result = MdExtractor().extract(
-            'שלום\nworld'.encode('utf-8'), FileType.MD.value
+            'שלום\nworld'.encode('utf-8'), FileType.MD
         )
         self.assertEqual(result.markdown, 'שלום\nworld')
         self.assertEqual(result.confidence, 1.0)
 
     def test_strips_bom(self):
-        result = MdExtractor().extract('﻿hello'.encode('utf-8'), FileType.MD.value)
+        result = MdExtractor().extract('﻿hello'.encode('utf-8'), FileType.MD)
         self.assertEqual(result.markdown, 'hello')
 
 

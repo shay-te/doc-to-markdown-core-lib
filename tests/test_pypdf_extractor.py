@@ -35,11 +35,11 @@ class TestPypdfExtractor(unittest.TestCase):
     def test_unavailable_without_pypdf(self):
         with mock.patch.dict(sys.modules, {'pypdf': None}):
             with self.assertRaises(ExtractorUnavailable):
-                PypdfExtractor().extract(b'%PDF', FileType.PDF.value)
+                PypdfExtractor().extract(b'%PDF', FileType.PDF)
 
     def test_happy_path(self):
         with patch_module('pypdf', _make_pypdf(['first page', 'second page'])):
-            result = PypdfExtractor().extract(b'%PDF', FileType.PDF.value)
+            result = PypdfExtractor().extract(b'%PDF', FileType.PDF)
         self.assertIn('first page', result.markdown)
         self.assertIn('second page', result.markdown)
         self.assertIn('page 1', result.markdown)
