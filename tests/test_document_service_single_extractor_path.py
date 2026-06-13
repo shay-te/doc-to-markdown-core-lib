@@ -2,13 +2,13 @@ import json
 import unittest
 
 from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
-from tests.make_markdown_service import make_markdown_service
+from tests.make_document_service import make_document_service
 from tests.stub_extractor import StubExtractor
 
 
 class TestSingleExtractorPath(unittest.TestCase):
     def test_single_extractor_winner_passes_through(self):
-        service = make_markdown_service(
+        service = make_document_service(
             [
                 StubExtractor(
                     'text',
@@ -26,7 +26,7 @@ class TestSingleExtractorPath(unittest.TestCase):
 
     def test_utf8_bytes_round_trip(self):
         sample = 'שלום עולם — مرحبا بالعالم — 你好世界'
-        service = make_markdown_service(
+        service = make_document_service(
             [
                 StubExtractor(
                     'text', sample, confidence=0.95, file_types=(FileType.PDF,)
@@ -39,7 +39,7 @@ class TestSingleExtractorPath(unittest.TestCase):
         self.assertEqual(decoded['languages_detected'], [])
 
     def test_report_shape_matches_spec(self):
-        service = make_markdown_service(
+        service = make_document_service(
             [
                 StubExtractor(
                     'text',

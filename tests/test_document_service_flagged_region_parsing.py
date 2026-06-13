@@ -1,14 +1,14 @@
 import unittest
 
 from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
-from tests.make_markdown_service import make_markdown_service
+from tests.make_document_service import make_document_service
 from tests.stub_extractor import StubExtractor
 
 
 class TestFlaggedRegionParsing(unittest.TestCase):
     def test_inline_flag_is_parsed_into_report(self):
         marker = '⚠️[UNCERTAIN: hello | candidates: hi | hey]'
-        service = make_markdown_service(
+        service = make_document_service(
             [
                 StubExtractor(
                     'text',

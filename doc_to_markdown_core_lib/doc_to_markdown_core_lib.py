@@ -5,23 +5,22 @@ from core_lib.core_lib import CoreLib
 from doc_to_markdown_core_lib.data_layers.service.candidate_selection_service import (
     CandidateSelectionService,
 )
-from doc_to_markdown_core_lib.data_layers.service.markdown_service import (
-    MarkdownService,
+from doc_to_markdown_core_lib.data_layers.service.document_service import (
+    DocumentService,
 )
 
 
 class DocToMarkdownCoreLib(CoreLib):
-    """Stateless conversion lib.
+    """Stateless document-to-markdown conversion lib.
 
-    Two services are exposed:
-
-    - :attr:`selection` (:class:`CandidateSelectionService`) — the
-      voting/agreement layer that picks the best candidate markdown
-      and computes the extraction report. Reusable on its own when a
-      caller already has candidates from somewhere else.
-    - :attr:`markdown` (:class:`MarkdownService`) — the orchestrator
-      that picks which extractors to run per file_type, runs them,
-      and hands the candidates to :attr:`selection`.
+    The single public service is :attr:`document` — a
+    :class:`DocumentService`. Call :meth:`DocumentService.extract` with
+    the document bytes and its :class:`FileType`; the service fans the
+    bytes out across every applicable extractor (e.g. a PDF goes to
+    PyMuPDF + pdfplumber + pdfminer + pypdf + pymupdf4llm + markitdown
+    + OCR engines), hands the candidates to an internal
+    :class:`CandidateSelectionService` for voting, and returns the
+    winning markdown plus the report explaining the choice.
 
     Config knobs (under ``core_lib`` in the supplied :class:`DictConfig`):
 
@@ -46,10 +45,13 @@ class DocToMarkdownCoreLib(CoreLib):
             else None
         )
 
-        self.selection = CandidateSelectionService(
+        # Selection service is constructed here and handed to
+        # ``DocumentService`` as a constructor parameter — callers
+        # interact only with the document service.
+        selection_service = CandidateSelectionService(
             confidence_threshold=confidence_threshold,
         )
-        self.markdown = MarkdownService(
-            selection_service=self.selection,
+        self.document = DocumentService(
+            selection_service=selection_service,
             ocr_languages=ocr_languages,
         )

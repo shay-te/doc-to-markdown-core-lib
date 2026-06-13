@@ -1,6 +1,7 @@
-"""Orchestrator. Knows which extractors to run for each file_type and
-which to skip in the clean PDF tier. Delegates the choose-a-winner
-work to :class:`CandidateSelectionService`."""
+"""Document-extraction orchestrator. Knows which extractors to run
+for each :class:`FileType` and which to skip in the clean PDF tier.
+Delegates the choose-a-winner work to the :class:`CandidateSelectionService`
+handed in at construction time."""
 import logging
 from typing import List, Optional, Tuple
 
@@ -79,9 +80,19 @@ _PRIMARY_PER_TYPE = {
 }
 
 
-class MarkdownService(Service):
-    """Runs the per-file_type extractor set, hands the candidates to
-    the selection service."""
+class DocumentService(Service):
+    """Single public surface of the library.
+
+    :meth:`extract` is the whole flow: take document bytes + their
+    :class:`FileType`, fan them out across every applicable extractor
+    (e.g. a PDF goes to PyMuPDF, pdfplumber, pdfminer, pypdf, pymupdf4llm,
+    markitdown, plus OCR), collect every candidate markdown, hand the
+    candidates to the injected :class:`CandidateSelectionService` for
+    voting, and return the winning markdown plus the report that
+    explains the choice.
+
+    Callers do not see the selection service directly — it's an
+    implementation detail of the document-extraction flow."""
 
     DEFAULT_OCR_LANGUAGES = ('eng', 'heb', 'ara', 'chi_sim')
 
