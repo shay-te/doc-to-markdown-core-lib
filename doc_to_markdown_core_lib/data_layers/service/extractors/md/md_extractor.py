@@ -1,11 +1,15 @@
-from doc_to_markdown_core_lib.data_layers.service.types import ExtractionCandidate, Extractor
+from doc_to_markdown_core_lib.data_layers.service.types import (
+    ExtractionCandidate,
+    Extractor,
+    FileType,
+)
 
 
 class MdExtractor(Extractor):
     """Pass-through for already-markdown sources."""
 
     name = 'md-passthrough'
-    file_types = ('md',)
+    file_types = (FileType.MD.value,)
 
     def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
         # utf-8-sig strips a leading BOM if present.

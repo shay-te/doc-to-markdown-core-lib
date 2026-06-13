@@ -1,6 +1,8 @@
 """Test doubles for the :class:`Extractor` interface."""
 from typing import List, Optional
 
+from doc_to_markdown_core_lib.data_layers.service.types import FileType
+
 
 class StubExtractor(object):
     """Returns a canned :class:`ExtractionCandidate`."""
@@ -11,7 +13,13 @@ class StubExtractor(object):
         markdown: str,
         confidence: float = 1.0,
         languages: Optional[List[str]] = None,
-        file_types: tuple = ('pdf', 'docx', 'image', 'txt', 'md'),
+        file_types: tuple = (
+            FileType.PDF.value,
+            FileType.DOCX.value,
+            FileType.IMAGE.value,
+            FileType.TXT.value,
+            FileType.MD.value,
+        ),
         raises: bool = False,
         unavailable: bool = False,
     ):

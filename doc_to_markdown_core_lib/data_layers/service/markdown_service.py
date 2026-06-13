@@ -15,8 +15,17 @@ from doc_to_markdown_core_lib.data_layers.service.extractors.docx.docx_extractor
 from doc_to_markdown_core_lib.data_layers.service.extractors.docx.mammoth_extractor import (
     MammothExtractor,
 )
+from doc_to_markdown_core_lib.data_layers.service.extractors.image.easyocr_extractor import (
+    EasyOcrExtractor,
+)
+from doc_to_markdown_core_lib.data_layers.service.extractors.image.rapidocr_extractor import (
+    RapidOcrExtractor,
+)
 from doc_to_markdown_core_lib.data_layers.service.extractors.md.md_extractor import (
     MdExtractor,
+)
+from doc_to_markdown_core_lib.data_layers.service.extractors.pdf.markitdown_extractor import (
+    MarkItDownExtractor,
 )
 from doc_to_markdown_core_lib.data_layers.service.extractors.pdf.pdfminer_extractor import (
     PdfMinerExtractor,
@@ -26,6 +35,12 @@ from doc_to_markdown_core_lib.data_layers.service.extractors.pdf.pdfplumber_extr
 )
 from doc_to_markdown_core_lib.data_layers.service.extractors.pdf.pymupdf_extractor import (
     PyMuPdfExtractor,
+)
+from doc_to_markdown_core_lib.data_layers.service.extractors.pdf.pymupdf4llm_extractor import (
+    PyMuPdf4LlmExtractor,
+)
+from doc_to_markdown_core_lib.data_layers.service.extractors.pdf.pypdf_extractor import (
+    PypdfExtractor,
 )
 from doc_to_markdown_core_lib.data_layers.service.extractors.doc.soffice_extractor import (
     SofficeExtractor,
@@ -45,17 +60,18 @@ from doc_to_markdown_core_lib.data_layers.service.types import (
     ExtractionResult,
     Extractor,
     ExtractorUnavailable,
+    FileType,
 )
 
 logger = logging.getLogger(__name__)
 
 
 _PRIMARY_PER_TYPE = {
-    'pdf': 'pymupdf',
-    'docx': 'python-docx',
-    'doc': 'soffice',
-    'txt': 'plain-text',
-    'md': 'md-passthrough',
+    FileType.PDF.value: 'pymupdf',
+    FileType.DOCX.value: 'python-docx',
+    FileType.DOC.value: 'soffice',
+    FileType.TXT.value: 'plain-text',
+    FileType.MD.value: 'md-passthrough',
 }
 
 
@@ -83,6 +99,8 @@ class MarkdownService(Service):
     def _build_default_extractors(
         ocr_languages: Tuple[str, ...],
     ) -> List[Extractor]:
+        # ocr_languages uses tesseract codes; easyocr/rapidocr manage
+        # their own language models (see their docstrings).
         return [
             MdExtractor(),
             TxtExtractor(),
@@ -93,7 +111,12 @@ class MarkdownService(Service):
             PyMuPdfExtractor(),
             PdfPlumberExtractor(),
             PdfMinerExtractor(),
+            PypdfExtractor(),
+            PyMuPdf4LlmExtractor(),
+            MarkItDownExtractor(),
             TesseractExtractor(languages=list(ocr_languages)),
+            EasyOcrExtractor(),
+            RapidOcrExtractor(),
         ]
 
     def register(self, extractor: Extractor) -> None:

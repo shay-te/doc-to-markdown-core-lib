@@ -16,7 +16,10 @@ from doc_to_markdown_core_lib.data_layers.service.extractors.docx.docx_extractor
 from doc_to_markdown_core_lib.data_layers.service.markdown_service import (
     MarkdownService,
 )
-from doc_to_markdown_core_lib.data_layers.service.types import ExtractionCandidate
+from doc_to_markdown_core_lib.data_layers.service.types import (
+    ExtractionCandidate,
+    FileType,
+)
 from tests.fakes import StubExtractor
 
 
@@ -63,14 +66,14 @@ class TestMarkdownServiceEmptyCandidateSkip(unittest.TestCase):
         service = _new(
             [
                 StubExtractor(
-                    'blank', '   ', confidence=0.5, file_types=('pdf',)
+                    'blank', '   ', confidence=0.5, file_types=(FileType.PDF.value,)
                 ),
                 StubExtractor(
-                    'text', 'real text', confidence=0.9, file_types=('pdf',)
+                    'text', 'real text', confidence=0.9, file_types=(FileType.PDF.value,)
                 ),
             ],
         )
-        result = service.extract(b'%PDF', 'pdf')
+        result = service.extract(b'%PDF', FileType.PDF.value)
         reasons = {
             entry['extractor']: entry['reason']
             for entry in result.report['extractors_skipped']
@@ -81,17 +84,17 @@ class TestMarkdownServiceEmptyCandidateSkip(unittest.TestCase):
 class TestMarkdownServicePrimarySelection(unittest.TestCase):
     def test_clean_tier_picks_primary_when_matched(self):
         primary = StubExtractor(
-            'pymupdf', 'primary-only', confidence=0.99, file_types=('pdf',)
+            'pymupdf', 'primary-only', confidence=0.99, file_types=(FileType.PDF.value,)
         )
         other = StubExtractor(
-            'other', 'other-only', confidence=0.99, file_types=('pdf',)
+            'other', 'other-only', confidence=0.99, file_types=(FileType.PDF.value,)
         )
         service = _new([primary, other])
         with mock.patch(
             'doc_to_markdown_core_lib.data_layers.service.markdown_service.detect_tier',
             return_value='clean',
         ):
-            result = service.extract(b'%PDF', 'pdf')
+            result = service.extract(b'%PDF', FileType.PDF.value)
         self.assertEqual(result.markdown, 'primary-only')
         self.assertEqual(result.report['extractors_used'], ['pymupdf'])
 
@@ -149,7 +152,7 @@ class TestPdfPlumberEmptyTableBranch(unittest.TestCase):
         plumber_mod = _types.ModuleType('pdfplumber')
         plumber_mod.open = lambda buf: _Pdf()
         with mock.patch.dict(sys.modules, {'pdfplumber': plumber_mod}):
-            result = PdfPlumberExtractor().extract(b'%PDF', 'pdf')
+            result = PdfPlumberExtractor().extract(b'%PDF', FileType.PDF.value)
         self.assertIn('body', result.markdown)
         self.assertNotIn('|', result.markdown)
 
@@ -178,7 +181,7 @@ class TestDocxEmptyTableBranchInExtract(unittest.TestCase):
 
         docx_mod.Document = _FakeDoc
         with mock.patch.dict(sys.modules, {'docx': docx_mod}):
-            result = DocxExtractor().extract(b'PK', 'docx')
+            result = DocxExtractor().extract(b'PK', FileType.DOCX.value)
         self.assertEqual(result.markdown, 'body')
 
 
@@ -188,10 +191,10 @@ class TestMarkdownServiceCleanTierNoPrimaryEntry(unittest.TestCase):
         service = _new(
             [
                 StubExtractor(
-                    'img-a', 'aaa', confidence=0.9, file_types=('image',)
+                    'img-a', 'aaa', confidence=0.9, file_types=(FileType.IMAGE.value,)
                 ),
                 StubExtractor(
-                    'img-b', 'bbb', confidence=0.5, file_types=('image',)
+                    'img-b', 'bbb', confidence=0.5, file_types=(FileType.IMAGE.value,)
                 ),
             ],
         )
@@ -199,7 +202,7 @@ class TestMarkdownServiceCleanTierNoPrimaryEntry(unittest.TestCase):
             'doc_to_markdown_core_lib.data_layers.service.markdown_service.detect_tier',
             return_value='clean',
         ):
-            result = service.extract(b'\x89PNG', 'image')
+            result = service.extract(b'\x89PNG', FileType.IMAGE.value)
         self.assertEqual(result.markdown, 'aaa')
 
 

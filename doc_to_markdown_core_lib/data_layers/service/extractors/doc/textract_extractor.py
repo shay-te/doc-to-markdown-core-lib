@@ -1,8 +1,14 @@
 from doc_to_markdown_core_lib.data_layers.service.types import (
+    CONFIDENCE_DOCUMENT_CHARS_NORM,
     ExtractionCandidate,
     Extractor,
     ExtractorUnavailable,
+    FileType,
 )
+
+# Structure is lost in the plain-text dump, so a full-length document
+# still only earns a discounted score versus format-aware extractors.
+_PLAIN_TEXT_CONFIDENCE_DISCOUNT = 0.7
 
 
 class TextractExtractor(Extractor):
@@ -12,7 +18,7 @@ class TextractExtractor(Extractor):
     so it loses to format-aware extractors when they're available."""
 
     name = 'textract'
-    file_types = ('doc', 'docx')
+    file_types = (FileType.DOC.value, FileType.DOCX.value)
 
     def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
         try:
@@ -22,7 +28,7 @@ class TextractExtractor(Extractor):
         except ImportError as import_error:
             raise ExtractorUnavailable('textract not installed') from import_error
 
-        suffix = '.doc' if file_type == 'doc' else '.docx'
+        suffix = '.doc' if file_type == FileType.DOC.value else '.docx'
         with tempfile.NamedTemporaryFile(
             suffix=suffix, delete=False
         ) as temp_file:
@@ -37,7 +43,10 @@ class TextractExtractor(Extractor):
                 pass
 
         markdown = (text or '').strip()
-        confidence = min(1.0, max(0.0, len(markdown) / 2000)) * 0.7
+        confidence = (
+            min(1.0, max(0.0, len(markdown) / CONFIDENCE_DOCUMENT_CHARS_NORM))
+            * _PLAIN_TEXT_CONFIDENCE_DISCOUNT
+        )
         return ExtractionCandidate(
             extractor=self.name,
             markdown=markdown,

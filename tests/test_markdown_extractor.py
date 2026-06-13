@@ -7,6 +7,7 @@ from doc_to_markdown_core_lib.data_layers.service.candidate_selection_service im
 from doc_to_markdown_core_lib.data_layers.service.markdown_service import (
     MarkdownService as MarkdownExtractor,
 )
+from doc_to_markdown_core_lib.data_layers.service.types import FileType
 from tests.fakes import StubExtractor
 
 
@@ -24,11 +25,11 @@ class TestSingleExtractorPath(unittest.TestCase):
         extractor = _new(
             [
                 StubExtractor(
-                    'text', 'hello world', confidence=0.95, file_types=('pdf',)
+                    'text', 'hello world', confidence=0.95, file_types=(FileType.PDF.value,)
                 )
             ],
         )
-        result = extractor.extract(b'pdf-bytes', 'pdf')
+        result = extractor.extract(b'pdf-bytes', FileType.PDF.value)
         self.assertEqual(result.markdown, 'hello world')
         self.assertEqual(result.report['winning_extractor'], 'text')
         self.assertFalse(result.report['needs_review'])
@@ -37,9 +38,9 @@ class TestSingleExtractorPath(unittest.TestCase):
     def test_utf8_bytes_round_trip(self):
         sample = 'שלום עולם — مرحبا بالعالم — 你好世界'
         extractor = _new(
-            [StubExtractor('text', sample, confidence=0.95, file_types=('pdf',))],
+            [StubExtractor('text', sample, confidence=0.95, file_types=(FileType.PDF.value,))],
         )
-        result = extractor.extract(b'pdf-bytes', 'pdf')
+        result = extractor.extract(b'pdf-bytes', FileType.PDF.value)
         self.assertEqual(result.markdown_bytes.decode('utf-8'), sample)
         decoded = json.loads(result.report_bytes.decode('utf-8'))
         self.assertEqual(decoded['languages_detected'], [])
@@ -51,12 +52,12 @@ class TestSingleExtractorPath(unittest.TestCase):
                     'text',
                     'hello',
                     confidence=0.9,
-                    file_types=('pdf',),
+                    file_types=(FileType.PDF.value,),
                     languages=['eng'],
                 )
             ],
         )
-        report = extractor.extract(b'x', 'pdf').report
+        report = extractor.extract(b'x', FileType.PDF.value).report
         self.assertIn('overall_confidence', report)
         self.assertIn('tier', report)
         self.assertIn('extractors_used', report)
@@ -71,17 +72,17 @@ class TestMultipleExtractorsPickWinner(unittest.TestCase):
         extractor = _new(
             [
                 StubExtractor(
-                    'a', 'apple banana', confidence=0.7, file_types=('pdf',)
+                    'a', 'apple banana', confidence=0.7, file_types=(FileType.PDF.value,)
                 ),
                 StubExtractor(
                     'b',
                     'apple banana carrot',
                     confidence=0.9,
-                    file_types=('pdf',),
+                    file_types=(FileType.PDF.value,),
                 ),
             ],
         )
-        result = extractor.extract(b'pdf', 'pdf')
+        result = extractor.extract(b'pdf', FileType.PDF.value)
         self.assertEqual(result.markdown, 'apple banana carrot')
         self.assertEqual(result.report['winning_extractor'], 'b')
 
@@ -92,18 +93,18 @@ class TestMultipleExtractorsPickWinner(unittest.TestCase):
                     'a',
                     'apple banana carrot',
                     confidence=0.9,
-                    file_types=('pdf',),
+                    file_types=(FileType.PDF.value,),
                 ),
                 StubExtractor(
                     'b',
                     'zebra giraffe lion',
                     confidence=0.9,
-                    file_types=('pdf',),
+                    file_types=(FileType.PDF.value,),
                 ),
             ],
             threshold=0.8,
         )
-        result = extractor.extract(b'pdf', 'pdf')
+        result = extractor.extract(b'pdf', FileType.PDF.value)
         self.assertTrue(result.report['needs_review'])
 
 
@@ -111,11 +112,11 @@ class TestFailingExtractors(unittest.TestCase):
     def test_failing_extractor_does_not_drop_document(self):
         extractor = _new(
             [
-                StubExtractor('boom', '', file_types=('pdf',), raises=True),
-                StubExtractor('text', 'hello', confidence=0.9, file_types=('pdf',)),
+                StubExtractor('boom', '', file_types=(FileType.PDF.value,), raises=True),
+                StubExtractor('text', 'hello', confidence=0.9, file_types=(FileType.PDF.value,)),
             ],
         )
-        result = extractor.extract(b'pdf', 'pdf')
+        result = extractor.extract(b'pdf', FileType.PDF.value)
         self.assertEqual(result.markdown, 'hello')
         self.assertEqual(result.report['extractors_used'], ['text'])
         skipped_names = [
@@ -127,12 +128,12 @@ class TestFailingExtractors(unittest.TestCase):
         extractor = _new(
             [
                 StubExtractor(
-                    'missing-lib', '', file_types=('pdf',), unavailable=True
+                    'missing-lib', '', file_types=(FileType.PDF.value,), unavailable=True
                 ),
-                StubExtractor('text', 'hello', confidence=0.9, file_types=('pdf',)),
+                StubExtractor('text', 'hello', confidence=0.9, file_types=(FileType.PDF.value,)),
             ],
         )
-        result = extractor.extract(b'pdf', 'pdf')
+        result = extractor.extract(b'pdf', FileType.PDF.value)
         reasons = {
             entry['extractor']: entry['reason']
             for entry in result.report['extractors_skipped']
@@ -142,7 +143,7 @@ class TestFailingExtractors(unittest.TestCase):
 
     def test_no_candidates_returns_uncertain_marker(self):
         extractor = _new([])
-        result = extractor.extract(b'pdf', 'pdf')
+        result = extractor.extract(b'pdf', FileType.PDF.value)
         self.assertIn('⚠️[UNCERTAIN', result.markdown)
         self.assertFalse(result.report['completeness_check'])
         self.assertTrue(result.report['needs_review'])
@@ -157,11 +158,11 @@ class TestFlaggedRegionParsing(unittest.TestCase):
                     'text',
                     f'before {marker} after',
                     confidence=0.95,
-                    file_types=('pdf',),
+                    file_types=(FileType.PDF.value,),
                 )
             ],
         )
-        result = extractor.extract(b'pdf', 'pdf')
+        result = extractor.extract(b'pdf', FileType.PDF.value)
         regions = result.report['flagged_regions']
         self.assertEqual(len(regions), 1)
         self.assertEqual(regions[0]['best_guess'], 'hello')
@@ -173,8 +174,8 @@ class TestSelectionAndHelpers(unittest.TestCase):
     def test_clean_tier_with_no_primary_match_returns_first_match(self):
         extractor = _new(
             [
-                StubExtractor('a', 'text-a', confidence=0.9, file_types=('pdf',)),
-                StubExtractor('b', 'text-b', confidence=0.5, file_types=('pdf',)),
+                StubExtractor('a', 'text-a', confidence=0.9, file_types=(FileType.PDF.value,)),
+                StubExtractor('b', 'text-b', confidence=0.5, file_types=(FileType.PDF.value,)),
             ],
         )
         from unittest import mock as _mock
@@ -183,7 +184,7 @@ class TestSelectionAndHelpers(unittest.TestCase):
             'doc_to_markdown_core_lib.data_layers.service.markdown_service.detect_tier',
             return_value='clean',
         ):
-            result = extractor.extract(b'x', 'pdf')
+            result = extractor.extract(b'x', FileType.PDF.value)
         # 'pymupdf' (the primary) isn't in our list → matches[:1] used.
         self.assertEqual(result.markdown, 'text-a')
 
@@ -194,11 +195,11 @@ class TestSelectionAndHelpers(unittest.TestCase):
                     'text',
                     '﻿hello with bom',
                     confidence=0.95,
-                    file_types=('pdf',),
+                    file_types=(FileType.PDF.value,),
                 )
             ],
         )
-        result = extractor.extract(b'x', 'pdf')
+        result = extractor.extract(b'x', FileType.PDF.value)
         self.assertFalse(result.markdown_bytes.startswith(b'\xef\xbb\xbf'))
         self.assertEqual(result.markdown, 'hello with bom')
 
@@ -206,16 +207,16 @@ class TestSelectionAndHelpers(unittest.TestCase):
         # Disjoint candidates — survival check fails → tail flag.
         extractor = _new(
             [
-                StubExtractor('a', 'apple', confidence=0.9, file_types=('pdf',)),
+                StubExtractor('a', 'apple', confidence=0.9, file_types=(FileType.PDF.value,)),
                 StubExtractor(
                     'b',
                     'zebra giraffe lion',
                     confidence=0.8,
-                    file_types=('pdf',),
+                    file_types=(FileType.PDF.value,),
                 ),
             ],
         )
-        result = extractor.extract(b'x', 'pdf')
+        result = extractor.extract(b'x', FileType.PDF.value)
         self.assertFalse(result.report['completeness_check'])
         self.assertIn('extraction may be incomplete', result.markdown)
         self.assertTrue(result.report['needs_review'])

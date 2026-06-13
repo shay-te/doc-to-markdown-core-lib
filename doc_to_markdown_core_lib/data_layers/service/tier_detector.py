@@ -1,17 +1,22 @@
 """Pre-flight tiering. ``clean`` → one engine is enough; ``risky``
 → run the full ensemble. PyMuPDF missing → PDFs default to ``risky``."""
+from doc_to_markdown_core_lib.data_layers.service.types import FileType
 
 _TEXT_LAYER_CHAR_FLOOR = 100  # avg chars/page above this → clean
 
 
 def detect_tier(content: bytes, file_type: str) -> str:
     """Return ``'clean'`` or ``'risky'``."""
-    ft = (file_type or '').lower()
-    if ft in ('txt', 'md', 'docx'):
+    normalized_file_type = (file_type or '').lower()
+    if normalized_file_type in (
+        FileType.TXT.value,
+        FileType.MD.value,
+        FileType.DOCX.value,
+    ):
         return 'clean'
-    if ft == 'image':
+    if normalized_file_type == FileType.IMAGE.value:
         return 'risky'
-    if ft == 'pdf':
+    if normalized_file_type == FileType.PDF.value:
         return _detect_pdf_tier(content)
     return 'risky'
 

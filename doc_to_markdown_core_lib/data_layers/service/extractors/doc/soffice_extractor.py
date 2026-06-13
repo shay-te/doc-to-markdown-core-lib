@@ -4,27 +4,36 @@ import subprocess
 import tempfile
 
 from doc_to_markdown_core_lib.data_layers.service.types import (
+    CONFIDENCE_DOCUMENT_CHARS_NORM,
     ExtractionCandidate,
     Extractor,
     ExtractorUnavailable,
+    FileType,
 )
+
+_SOFFICE_TIMEOUT_SECONDS = 120
+
+# The conversion hop (doc → docx → markdown) can drop formatting at
+# either step, so the score is discounted versus direct extractors.
+_CONVERSION_HOP_CONFIDENCE_DISCOUNT = 0.85
 
 
 class SofficeExtractor(Extractor):
     """LibreOffice (``soffice --headless``) converts ``.doc`` →
-    ``.docx``; the structured docx is the real payload, so we then
-    hand off to ``mammoth`` if available, else a raw text dump. Needs
-    the ``soffice`` binary on PATH."""
+    ``.docx``; the structured docx is the real payload, handed off to
+    ``mammoth``. Without ``mammoth`` installed the candidate is empty
+    (zero confidence) and loses the vote. Needs the ``soffice`` binary
+    on PATH."""
 
     name = 'soffice'
-    file_types = ('doc', 'docx')
+    file_types = (FileType.DOC.value, FileType.DOCX.value)
 
     def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
         binary = shutil.which('soffice') or shutil.which('libreoffice')
         if binary is None:
             raise ExtractorUnavailable('soffice / libreoffice binary not found')
 
-        suffix = '.doc' if file_type == 'doc' else '.docx'
+        suffix = '.doc' if file_type == FileType.DOC.value else '.docx'
         with tempfile.TemporaryDirectory() as work_dir:
             input_path = os.path.join(work_dir, f'input{suffix}')
             with open(input_path, 'wb') as input_file:
@@ -38,7 +47,7 @@ class SofficeExtractor(Extractor):
                     check=True,
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
-                    timeout=120,
+                    timeout=_SOFFICE_TIMEOUT_SECONDS,
                 )
             except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as run_error:
                 raise ExtractorUnavailable(
@@ -59,7 +68,10 @@ class SofficeExtractor(Extractor):
         except ImportError:
             markdown = ''
 
-        confidence = min(1.0, max(0.0, len(markdown) / 2000)) * 0.85
+        confidence = (
+            min(1.0, max(0.0, len(markdown) / CONFIDENCE_DOCUMENT_CHARS_NORM))
+            * _CONVERSION_HOP_CONFIDENCE_DISCOUNT
+        )
         return ExtractionCandidate(
             extractor=self.name,
             markdown=markdown,

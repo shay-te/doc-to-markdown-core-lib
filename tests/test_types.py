@@ -15,8 +15,8 @@ class TestExtractorUnavailable(unittest.TestCase):
     def test_carries_message(self):
         try:
             raise ExtractorUnavailable('missing thing')
-        except ExtractorUnavailable as e:
-            self.assertIn('missing', str(e))
+        except ExtractorUnavailable as unavailable_error:
+            self.assertIn('missing', str(unavailable_error))
 
 
 class TestExtractionCandidate(unittest.TestCase):
@@ -35,8 +35,10 @@ class TestExtractionCandidate(unittest.TestCase):
 
 class TestExtractionResult(unittest.TestCase):
     def test_default_candidates_is_empty_list(self):
-        r = ExtractionResult(markdown='m', markdown_bytes=b'm', report={}, report_bytes=b'{}')
-        self.assertEqual(r.candidates, [])
+        result = ExtractionResult(
+            markdown='m', markdown_bytes=b'm', report={}, report_bytes=b'{}'
+        )
+        self.assertEqual(result.candidates, [])
 
 
 class TestExtractorAbstract(unittest.TestCase):

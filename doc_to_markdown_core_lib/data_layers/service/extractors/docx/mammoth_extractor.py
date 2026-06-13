@@ -2,6 +2,7 @@ from doc_to_markdown_core_lib.data_layers.service.types import (
     ExtractionCandidate,
     Extractor,
     ExtractorUnavailable,
+    FileType,
 )
 
 
@@ -10,15 +11,17 @@ class MammothExtractor(Extractor):
     keep inline formatting better."""
 
     name = 'mammoth'
-    file_types = ('docx',)
+    file_types = (FileType.DOCX.value,)
 
     def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
         try:
             import io
 
             import mammoth
-        except ImportError as e:
-            raise ExtractorUnavailable('mammoth not installed') from e
+        except ImportError as import_error:
+            raise ExtractorUnavailable(
+                'mammoth not installed'
+            ) from import_error
 
         result = mammoth.convert_to_markdown(io.BytesIO(content))
         markdown = (result.value or '').strip()

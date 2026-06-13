@@ -7,35 +7,29 @@ from doc_to_markdown_core_lib.data_layers.service.types import (
 )
 
 
-class PyMuPdfExtractor(Extractor):
-    """Text-layer extractor (PyMuPDF/fitz). Mostly empty on scans —
-    OCR engines pick up the slack."""
+class PypdfExtractor(Extractor):
+    """Fourth diverse-class text-layer engine (pure-Python ``pypdf``).
+    Its tokenizer disagrees with pdfminer/pymupdf on hyphenation and
+    whitespace, which is exactly the diversity the vote wants."""
 
-    name = 'pymupdf'
+    name = 'pypdf'
     file_types = (FileType.PDF.value,)
 
     def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
         try:
-            import fitz
+            import io
+
+            from pypdf import PdfReader
         except ImportError as import_error:
             raise ExtractorUnavailable(
-                'PyMuPDF (fitz) not installed'
+                'pypdf not installed'
             ) from import_error
 
-        try:
-            doc = fitz.open(stream=content, filetype='pdf')
-        except Exception as open_error:
-            raise RuntimeError(
-                f'pymupdf failed to open document: {open_error}'
-            ) from open_error
-
+        reader = PdfReader(io.BytesIO(content))
         parts = []
-        try:
-            for page_number, page in enumerate(doc, start=1):
-                text = (page.get_text('text') or '').strip()
-                parts.append(f'<!-- page {page_number} -->\n\n{text}')
-        finally:
-            doc.close()
+        for page_number, page in enumerate(reader.pages, start=1):
+            text = (page.extract_text() or '').strip()
+            parts.append(f'<!-- page {page_number} -->\n\n{text}')
 
         markdown = '\n\n'.join(parts).strip()
         confidence = min(

@@ -7,37 +7,29 @@ from doc_to_markdown_core_lib.data_layers.service.types import (
 )
 
 
-class PyMuPdfExtractor(Extractor):
-    """Text-layer extractor (PyMuPDF/fitz). Mostly empty on scans —
-    OCR engines pick up the slack."""
+class PyMuPdf4LlmExtractor(Extractor):
+    """``pymupdf4llm`` renders PDFs as markdown natively (headings,
+    lists, tables), so its candidate keeps structure the plain
+    text-layer engines flatten."""
 
-    name = 'pymupdf'
+    name = 'pymupdf4llm'
     file_types = (FileType.PDF.value,)
 
     def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
         try:
             import fitz
+            import pymupdf4llm
         except ImportError as import_error:
             raise ExtractorUnavailable(
-                'PyMuPDF (fitz) not installed'
+                'pymupdf4llm (and PyMuPDF) not installed'
             ) from import_error
 
+        doc = fitz.open(stream=content, filetype='pdf')
         try:
-            doc = fitz.open(stream=content, filetype='pdf')
-        except Exception as open_error:
-            raise RuntimeError(
-                f'pymupdf failed to open document: {open_error}'
-            ) from open_error
-
-        parts = []
-        try:
-            for page_number, page in enumerate(doc, start=1):
-                text = (page.get_text('text') or '').strip()
-                parts.append(f'<!-- page {page_number} -->\n\n{text}')
+            markdown = (pymupdf4llm.to_markdown(doc) or '').strip()
         finally:
             doc.close()
 
-        markdown = '\n\n'.join(parts).strip()
         confidence = min(
             1.0, max(0.0, len(markdown) / CONFIDENCE_DOCUMENT_CHARS_NORM)
         )

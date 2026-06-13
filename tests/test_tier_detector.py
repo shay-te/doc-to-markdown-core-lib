@@ -4,6 +4,7 @@ import unittest
 from unittest import mock
 
 from doc_to_markdown_core_lib.data_layers.service.tier_detector import detect_tier
+from doc_to_markdown_core_lib.data_layers.service.types import FileType
 
 
 def _fitz_module(pages_text=None, open_raises=None):
@@ -41,11 +42,22 @@ def _fitz_module(pages_text=None, open_raises=None):
 
 class TestTierDetectorSimpleTypes(unittest.TestCase):
     def test_txt_md_docx_are_clean(self):
-        for ft in ('txt', 'md', 'docx', 'TXT', 'MD', 'DocX'):
-            self.assertEqual(detect_tier(b'x', ft), 'clean')
+        # The uppercase variants are deliberately raw strings — they
+        # probe the lower() normalization inside detect_tier.
+        for file_type in (
+            FileType.TXT.value,
+            FileType.MD.value,
+            FileType.DOCX.value,
+            'TXT',
+            'MD',
+            'DocX',
+        ):
+            self.assertEqual(detect_tier(b'x', file_type), 'clean')
 
     def test_image_is_risky(self):
-        self.assertEqual(detect_tier(b'\x89PNG\r\n\x1a\n', 'image'), 'risky')
+        self.assertEqual(
+            detect_tier(b'\x89PNG\r\n\x1a\n', FileType.IMAGE.value), 'risky'
+        )
 
     def test_unknown_type_is_risky(self):
         self.assertEqual(detect_tier(b'x', 'unknown'), 'risky')
@@ -60,27 +72,27 @@ class TestTierDetectorSimpleTypes(unittest.TestCase):
 class TestTierDetectorPdf(unittest.TestCase):
     def test_pdf_without_fitz_is_risky(self):
         with mock.patch.dict(sys.modules, {'fitz': None}):
-            self.assertEqual(detect_tier(b'%PDF', 'pdf'), 'risky')
+            self.assertEqual(detect_tier(b'%PDF', FileType.PDF.value), 'risky')
 
     def test_pdf_with_dense_text_layer_is_clean(self):
         mod = _fitz_module(pages_text=['x' * 200, 'y' * 200])
         with mock.patch.dict(sys.modules, {'fitz': mod}):
-            self.assertEqual(detect_tier(b'%PDF', 'pdf'), 'clean')
+            self.assertEqual(detect_tier(b'%PDF', FileType.PDF.value), 'clean')
 
     def test_pdf_with_sparse_text_layer_is_risky(self):
         mod = _fitz_module(pages_text=['', ''])
         with mock.patch.dict(sys.modules, {'fitz': mod}):
-            self.assertEqual(detect_tier(b'%PDF', 'pdf'), 'risky')
+            self.assertEqual(detect_tier(b'%PDF', FileType.PDF.value), 'risky')
 
     def test_pdf_with_zero_pages_is_risky(self):
         mod = _fitz_module(pages_text=[])
         with mock.patch.dict(sys.modules, {'fitz': mod}):
-            self.assertEqual(detect_tier(b'%PDF', 'pdf'), 'risky')
+            self.assertEqual(detect_tier(b'%PDF', FileType.PDF.value), 'risky')
 
     def test_pdf_with_broken_fitz_open_is_risky(self):
         mod = _fitz_module(open_raises=RuntimeError('cannot open'))
         with mock.patch.dict(sys.modules, {'fitz': mod}):
-            self.assertEqual(detect_tier(b'not a pdf', 'pdf'), 'risky')
+            self.assertEqual(detect_tier(b'not a pdf', FileType.PDF.value), 'risky')
 
 
 if __name__ == '__main__':

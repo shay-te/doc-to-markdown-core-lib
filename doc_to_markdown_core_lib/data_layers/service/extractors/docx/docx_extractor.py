@@ -2,6 +2,7 @@ from doc_to_markdown_core_lib.data_layers.service.types import (
     ExtractionCandidate,
     Extractor,
     ExtractorUnavailable,
+    FileType,
 )
 
 
@@ -10,15 +11,17 @@ class DocxExtractor(Extractor):
     for diverse interpretations of the same DOCX."""
 
     name = 'python-docx'
-    file_types = ('docx',)
+    file_types = (FileType.DOCX.value,)
 
     def extract(self, content: bytes, file_type: str) -> ExtractionCandidate:
         try:
             import io
 
             from docx import Document as DocxDocument
-        except ImportError as e:
-            raise ExtractorUnavailable('python-docx not installed') from e
+        except ImportError as import_error:
+            raise ExtractorUnavailable(
+                'python-docx not installed'
+            ) from import_error
 
         doc = DocxDocument(io.BytesIO(content))
         parts = []
