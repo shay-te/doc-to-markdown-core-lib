@@ -23,7 +23,7 @@ class TestMultipleExtractorsPickWinner(unittest.TestCase):
                 ),
             ],
         )
-        result = service.extract(b'pdf', FileType.PDF.value)
+        result = service.extract(b'%PDF', FileType.PDF.value)
         self.assertEqual(result.markdown, 'apple banana carrot')
         self.assertEqual(result.report['winning_extractor'], 'b')
 
@@ -45,7 +45,7 @@ class TestMultipleExtractorsPickWinner(unittest.TestCase):
             ],
             confidence_threshold=0.8,
         )
-        result = service.extract(b'pdf', FileType.PDF.value)
+        result = service.extract(b'%PDF', FileType.PDF.value)
         self.assertTrue(result.report['needs_review'])
 
 

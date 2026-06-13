@@ -21,7 +21,7 @@ _SOFFICE_MODULE = (
 
 def _fake_soffice_run(command, **kwargs):
     output_dir = command[command.index('--outdir') + 1]
-    with open(os.path.join(output_dir, 'input.docx'), 'wb') as output_file:
+    with open(os.path.join(output_dir, f'input.{FileType.DOCX.value}'), 'wb') as output_file:
         output_file.write(b'PK-converted-docx')
 
 

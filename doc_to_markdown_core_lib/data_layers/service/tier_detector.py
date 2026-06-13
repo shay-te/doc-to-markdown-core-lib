@@ -27,7 +27,7 @@ def _detect_pdf_tier(content: bytes) -> str:
     except ImportError:
         return 'risky'
     try:
-        doc = fitz.open(stream=content, filetype='pdf')
+        doc = fitz.open(stream=content, filetype=FileType.PDF.value)
     except Exception:
         return 'risky'
     try:

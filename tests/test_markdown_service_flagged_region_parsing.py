@@ -18,7 +18,7 @@ class TestFlaggedRegionParsing(unittest.TestCase):
                 )
             ],
         )
-        result = service.extract(b'pdf', FileType.PDF.value)
+        result = service.extract(b'%PDF', FileType.PDF.value)
         regions = result.report['flagged_regions']
         self.assertEqual(len(regions), 1)
         self.assertEqual(regions[0]['best_guess'], 'hello')

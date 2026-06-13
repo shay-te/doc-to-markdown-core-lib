@@ -32,7 +32,7 @@ class TextractExtractor(Extractor):
         except ImportError as import_error:
             raise ExtractorUnavailable('textract not installed') from import_error
 
-        suffix = '.doc' if file_type == FileType.DOC.value else '.docx'
+        suffix = f'.{file_type}'
         with tempfile.NamedTemporaryFile(
             suffix=suffix, delete=False
         ) as temp_file:

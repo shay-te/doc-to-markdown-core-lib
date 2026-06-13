@@ -62,7 +62,7 @@ class TesseractExtractor(Extractor):
                 ) from import_error
 
             parts = []
-            doc = fitz.open(stream=content, filetype='pdf')
+            doc = fitz.open(stream=content, filetype=FileType.PDF.value)
             try:
                 for page_number, page in enumerate(doc, start=1):
                     pix = page.get_pixmap(dpi=self._dpi)

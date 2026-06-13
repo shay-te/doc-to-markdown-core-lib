@@ -13,11 +13,6 @@ from doc_to_markdown_core_lib.data_layers.service.extractor_unavailable import (
 )
 from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
 
-_SUFFIX_PER_TYPE = {
-    FileType.PDF.value: '.pdf',
-    FileType.DOCX.value: '.docx',
-}
-
 
 class MarkItDownExtractor(Extractor):
     """Microsoft ``markitdown`` — an independent whole-document →
@@ -36,9 +31,9 @@ class MarkItDownExtractor(Extractor):
                 'markitdown not installed'
             ) from import_error
 
-        suffix = _SUFFIX_PER_TYPE.get(file_type)
-        if suffix is None:
+        if file_type not in self.file_types:
             raise ValueError(f'markitdown cannot handle file_type={file_type!r}')
+        suffix = f'.{file_type}'
 
         with tempfile.NamedTemporaryFile(
             suffix=suffix, delete=False

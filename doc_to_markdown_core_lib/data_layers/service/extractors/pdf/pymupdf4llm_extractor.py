@@ -28,7 +28,7 @@ class PyMuPdf4LlmExtractor(Extractor):
                 'pymupdf4llm (and PyMuPDF) not installed'
             ) from import_error
 
-        doc = fitz.open(stream=content, filetype='pdf')
+        doc = fitz.open(stream=content, filetype=FileType.PDF.value)
         try:
             markdown = (pymupdf4llm.to_markdown(doc) or '').strip()
         finally:

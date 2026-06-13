@@ -15,7 +15,7 @@ class TestFailingExtractors(unittest.TestCase):
                 ),
             ],
         )
-        result = service.extract(b'pdf', FileType.PDF.value)
+        result = service.extract(b'%PDF', FileType.PDF.value)
         self.assertEqual(result.markdown, 'hello')
         self.assertEqual(result.report['extractors_used'], ['text'])
         skipped_names = [
@@ -34,7 +34,7 @@ class TestFailingExtractors(unittest.TestCase):
                 ),
             ],
         )
-        result = service.extract(b'pdf', FileType.PDF.value)
+        result = service.extract(b'%PDF', FileType.PDF.value)
         reasons = {
             entry['extractor']: entry['reason']
             for entry in result.report['extractors_skipped']
@@ -44,7 +44,7 @@ class TestFailingExtractors(unittest.TestCase):
 
     def test_no_candidates_returns_uncertain_marker(self):
         service = make_markdown_service([])
-        result = service.extract(b'pdf', FileType.PDF.value)
+        result = service.extract(b'%PDF', FileType.PDF.value)
         self.assertIn('⚠️[UNCERTAIN', result.markdown)
         self.assertFalse(result.report['completeness_check'])
         self.assertTrue(result.report['needs_review'])

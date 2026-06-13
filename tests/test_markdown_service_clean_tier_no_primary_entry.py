@@ -8,7 +8,7 @@ from tests.stub_extractor import StubExtractor
 
 class TestMarkdownServiceCleanTierNoPrimaryEntry(unittest.TestCase):
     def test_clean_tier_image_falls_back_to_first_match(self):
-        # 'image' isn't in _PRIMARY_PER_TYPE → fall through to matches[:1].
+        # FileType.IMAGE.value isn't in _PRIMARY_PER_TYPE → fall through to matches[:1].
         service = make_markdown_service(
             [
                 StubExtractor(

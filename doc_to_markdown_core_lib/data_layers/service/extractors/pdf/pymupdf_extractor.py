@@ -27,7 +27,7 @@ class PyMuPdfExtractor(Extractor):
             ) from import_error
 
         try:
-            doc = fitz.open(stream=content, filetype='pdf')
+            doc = fitz.open(stream=content, filetype=FileType.PDF.value)
         except Exception as open_error:
             raise RuntimeError(
                 f'pymupdf failed to open document: {open_error}'

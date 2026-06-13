@@ -34,7 +34,7 @@ class TestTextractExtractor(unittest.TestCase):
         self.assertEqual(result.markdown, 'legacy doc body')
         self.assertGreater(result.confidence, 0.0)
         processed_path = textract_module.process.call_args.args[0]
-        self.assertTrue(processed_path.endswith('.doc'))
+        self.assertTrue(processed_path.endswith(f'.{FileType.DOC.value}'))
         # the temp file must be cleaned up after processing
         self.assertFalse(os.path.exists(processed_path))
 
@@ -43,7 +43,7 @@ class TestTextractExtractor(unittest.TestCase):
         with patch_module('textract', textract_module):
             TextractExtractor().extract(b'PK', FileType.DOCX.value)
         processed_path = textract_module.process.call_args.args[0]
-        self.assertTrue(processed_path.endswith('.docx'))
+        self.assertTrue(processed_path.endswith(f'.{FileType.DOCX.value}'))
 
     def test_full_length_text_caps_at_discounted_confidence(self):
         long_text = ('word ' * 1000).encode('utf-8')

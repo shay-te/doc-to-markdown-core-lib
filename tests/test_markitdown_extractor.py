@@ -44,7 +44,7 @@ class TestMarkItDownExtractor(unittest.TestCase):
             result = MarkItDownExtractor().extract(b'%PDF', FileType.PDF.value)
         self.assertIn('# converted', result.markdown)
         converted_path = markitdown_module.MarkItDown.last_converted_path
-        self.assertTrue(converted_path.endswith('.pdf'))
+        self.assertTrue(converted_path.endswith(f'.{FileType.PDF.value}'))
         self.assertFalse(os.path.exists(converted_path))
 
     def test_docx_uses_docx_suffix(self):
@@ -52,7 +52,7 @@ class TestMarkItDownExtractor(unittest.TestCase):
         with patch_module('markitdown', markitdown_module):
             MarkItDownExtractor().extract(b'PK', FileType.DOCX.value)
         converted_path = markitdown_module.MarkItDown.last_converted_path
-        self.assertTrue(converted_path.endswith('.docx'))
+        self.assertTrue(converted_path.endswith(f'.{FileType.DOCX.value}'))
 
     def test_unknown_file_type_raises_value_error(self):
         with patch_module('markitdown', _make_markitdown('x')):

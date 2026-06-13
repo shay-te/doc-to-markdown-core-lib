@@ -37,7 +37,7 @@ class SofficeExtractor(Extractor):
         if binary is None:
             raise ExtractorUnavailable('soffice / libreoffice binary not found')
 
-        suffix = '.doc' if file_type == FileType.DOC.value else '.docx'
+        suffix = f'.{file_type}'
         with tempfile.TemporaryDirectory() as work_dir:
             input_path = os.path.join(work_dir, f'input{suffix}')
             with open(input_path, 'wb') as input_file:
@@ -45,7 +45,7 @@ class SofficeExtractor(Extractor):
             try:
                 subprocess.run(
                     [
-                        binary, '--headless', '--convert-to', 'docx',
+                        binary, '--headless', '--convert-to', FileType.DOCX.value,
                         '--outdir', work_dir, input_path,
                     ],
                     check=True,
@@ -58,7 +58,7 @@ class SofficeExtractor(Extractor):
                     f'soffice conversion failed: {run_error}'
                 ) from run_error
 
-            docx_path = os.path.join(work_dir, 'input.docx')
+            docx_path = os.path.join(work_dir, f'input.{FileType.DOCX.value}')
             if not os.path.exists(docx_path):
                 raise ExtractorUnavailable('soffice produced no output file')
             with open(docx_path, 'rb') as docx_file:
