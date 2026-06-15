@@ -2,6 +2,7 @@ import unittest
 from unittest import mock
 
 from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
+from doc_to_markdown_core_lib.data_layers.service.tier import Tier
 from tests.make_document_service import make_document_service
 from tests.stub_extractor import StubExtractor
 
@@ -21,7 +22,7 @@ class TestDocumentServiceCleanTierNoPrimaryEntry(unittest.TestCase):
         )
         with mock.patch(
             'doc_to_markdown_core_lib.data_layers.service.document_service.detect_tier',
-            return_value='clean',
+            return_value=Tier.CLEAN,
         ):
             result = service.extract(b'\x89PNG', FileType.IMAGE)
         self.assertEqual(result.markdown, 'aaa')
