@@ -32,26 +32,15 @@ class DocToMarkdownCoreLib(CoreLib):
         super().__init__()
         self.config = conf
 
-        core_cfg = conf.get('core_lib', {}) if conf else {}
-        extraction_cfg = core_cfg.get('extraction', {}) or {}
-        ocr_languages_raw = extraction_cfg.get('ocr_languages')
-        confidence_threshold = float(
-            extraction_cfg.get('confidence_threshold', 0.8)
-        )
-
-        ocr_languages = (
-            tuple(ocr_languages_raw)
-            if ocr_languages_raw is not None
-            else None
-        )
-
-        # Selection service is constructed here and handed to
-        # ``DocumentService`` as a constructor parameter — callers
-        # interact only with the document service.
+        # Read config directly — no `.get(...)` defaults, no fallbacks. A
+        # missing/malformed extraction section must fail loudly here at
+        # construction; silently defaulting would hide misconfiguration.
+        # (`float`/`tuple` are type coercions, not fallbacks: env-sourced
+        # values arrive as strings / OmegaConf list nodes.)
         selection_service = CandidateSelectionService(
-            confidence_threshold=confidence_threshold,
+            confidence_threshold=float(conf.core_lib.extraction.confidence_threshold),
         )
         self.document = DocumentService(
             selection_service=selection_service,
-            ocr_languages=ocr_languages,
+            ocr_languages=tuple(conf.core_lib.extraction.ocr_languages),
         )

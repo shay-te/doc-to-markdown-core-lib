@@ -7,17 +7,21 @@ intentionally stateless.
 """
 import json
 import re
+from dataclasses import asdict
 from typing import List, Optional
 
 from core_lib.data_layers.service.service import Service
 
-from doc_to_markdown_core_lib.data_layers.service.extraction_candidate import (
+from doc_to_markdown_core_lib.data_layers.data.extraction.extraction_candidate import (
     ExtractionCandidate,
 )
-from doc_to_markdown_core_lib.data_layers.service.extraction_result import (
+from doc_to_markdown_core_lib.data_layers.data.extraction.extraction_report import (
+    ExtractionReport,
+)
+from doc_to_markdown_core_lib.data_layers.data.extraction.extraction_result import (
     ExtractionResult,
 )
-from doc_to_markdown_core_lib.data_layers.service.tier import Tier
+from doc_to_markdown_core_lib.data_layers.data.tier import Tier
 
 
 _UNCERTAIN_RE = re.compile(
@@ -91,21 +95,21 @@ class CandidateSelectionService(Service):
             or not completeness_ok
         )
 
-        report = {
-            'overall_confidence': round(overall_confidence, 4),
-            'tier': tier,
-            'extractors_used': used,
-            'extractors_skipped': skipped,
-            'languages_detected': languages,
-            'flagged_regions': flagged_regions,
-            'completeness_check': completeness_ok,
-            'winning_extractor': winning_extractor,
-            'agreement_score': round(agreement, 4),
-            'needs_review': needs_review,
-            'source_filename': filename,
-        }
+        report = ExtractionReport(
+            overall_confidence=round(overall_confidence, 4),
+            tier=tier,
+            extractors_used=used,
+            extractors_skipped=skipped,
+            languages_detected=languages,
+            flagged_regions=flagged_regions,
+            completeness_check=completeness_ok,
+            winning_extractor=winning_extractor,
+            agreement_score=round(agreement, 4),
+            needs_review=needs_review,
+            source_filename=filename,
+        )
         report_bytes = json.dumps(
-            report, ensure_ascii=False, indent=2
+            asdict(report), ensure_ascii=False, indent=2
         ).encode('utf-8')
         _assert_utf8(report_bytes)
 
@@ -124,13 +128,13 @@ class CandidateSelectionService(Service):
         skipped: List[dict],
         filename: Optional[str],
     ) -> ExtractionResult:
-        report = {
-            'overall_confidence': 0.0,
-            'tier': tier,
-            'extractors_used': used,
-            'extractors_skipped': skipped,
-            'languages_detected': [],
-            'flagged_regions': [
+        report = ExtractionReport(
+            overall_confidence=0.0,
+            tier=tier,
+            extractors_used=used,
+            extractors_skipped=skipped,
+            languages_detected=[],
+            flagged_regions=[
                 {
                     'location': 'document',
                     'best_guess': '',
@@ -138,17 +142,17 @@ class CandidateSelectionService(Service):
                     'reason': 'no extractor produced output',
                 }
             ],
-            'completeness_check': False,
-            'winning_extractor': None,
-            'agreement_score': 0.0,
-            'needs_review': True,
-            'source_filename': filename,
-        }
+            completeness_check=False,
+            winning_extractor=None,
+            agreement_score=0.0,
+            needs_review=True,
+            source_filename=filename,
+        )
         markdown = '⚠️[UNCERTAIN: no extractor could read this document]'
         markdown_bytes = markdown.encode('utf-8')
         _assert_utf8(markdown_bytes)
         report_bytes = json.dumps(
-            report, ensure_ascii=False, indent=2
+            asdict(report), ensure_ascii=False, indent=2
         ).encode('utf-8')
         _assert_utf8(report_bytes)
         return ExtractionResult(

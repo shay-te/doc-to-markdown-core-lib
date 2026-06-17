@@ -6,7 +6,7 @@ from doc_to_markdown_core_lib.data_layers.service.candidate_selection_service im
     _strip_bom,
     _union_languages,
 )
-from doc_to_markdown_core_lib.data_layers.service.extraction_candidate import (
+from doc_to_markdown_core_lib.data_layers.data.extraction.extraction_candidate import (
     ExtractionCandidate,
 )
 

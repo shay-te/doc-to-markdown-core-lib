@@ -1,21 +1,21 @@
 from typing import List, Optional
 
-from doc_to_markdown_core_lib.data_layers.service.confidence_norms import (
+from doc_to_markdown_core_lib.constants import (
     CONFIDENCE_DOCUMENT_CHARS_NORM,
     CONFIDENCE_SINGLE_IMAGE_CHARS_NORM,
 )
-from doc_to_markdown_core_lib.data_layers.service.extraction_candidate import (
+from doc_to_markdown_core_lib.data_layers.data.extraction.extraction_candidate import (
     ExtractionCandidate,
 )
-from doc_to_markdown_core_lib.data_layers.service.extractor import Extractor
-from doc_to_markdown_core_lib.data_layers.service.extractor_unavailable import (
+from doc_to_markdown_core_lib.data_layers.service.extractors.extractor import Extractor
+from doc_to_markdown_core_lib.error_handling.extractor_unavailable import (
     ExtractorUnavailable,
 )
 from doc_to_markdown_core_lib.data_layers.service.extractors.image.pdf_rasterizer import (
     DEFAULT_RASTER_DPI,
     rasterize_pdf_pages,
 )
-from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
+from doc_to_markdown_core_lib.data_layers.data.file_type import FileType
 
 
 class EasyOcrExtractor(Extractor):

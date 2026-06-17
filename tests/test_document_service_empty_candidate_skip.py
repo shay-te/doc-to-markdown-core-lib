@@ -1,6 +1,6 @@
 import unittest
 
-from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
+from doc_to_markdown_core_lib.data_layers.data.file_type import FileType
 from tests.make_document_service import make_document_service
 from tests.stub_extractor import StubExtractor
 
@@ -20,7 +20,7 @@ class TestDocumentServiceEmptyCandidateSkip(unittest.TestCase):
         result = service.extract(b'%PDF', FileType.PDF)
         reasons = {
             entry['extractor']: entry['reason']
-            for entry in result.report['extractors_skipped']
+            for entry in result.report.extractors_skipped
         }
         self.assertEqual(reasons.get('blank'), 'empty result')
 

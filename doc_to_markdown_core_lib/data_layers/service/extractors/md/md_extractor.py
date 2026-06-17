@@ -1,8 +1,8 @@
-from doc_to_markdown_core_lib.data_layers.service.extraction_candidate import (
+from doc_to_markdown_core_lib.data_layers.data.extraction.extraction_candidate import (
     ExtractionCandidate,
 )
-from doc_to_markdown_core_lib.data_layers.service.extractor import Extractor
-from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
+from doc_to_markdown_core_lib.data_layers.service.extractors.extractor import Extractor
+from doc_to_markdown_core_lib.data_layers.data.file_type import FileType
 
 
 class MdExtractor(Extractor):

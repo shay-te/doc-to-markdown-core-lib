@@ -6,7 +6,7 @@ from unittest import mock
 from doc_to_markdown_core_lib.data_layers.service.extractors.docx.docx_extractor import (
     DocxExtractor,
 )
-from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
+from doc_to_markdown_core_lib.data_layers.data.file_type import FileType
 
 
 class TestDocxEmptyTableBranchInExtract(unittest.TestCase):

@@ -1,21 +1,23 @@
 import unittest
 from unittest import mock
 
-from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
-from doc_to_markdown_core_lib.data_layers.service.tier import Tier
+from doc_to_markdown_core_lib.data_layers.data.file_type import FileType
+from doc_to_markdown_core_lib.data_layers.data.tier import Tier
 from tests.make_document_service import make_document_service
 from tests.stub_extractor import StubExtractor
 
 
 class TestSelectionAndHelpers(unittest.TestCase):
-    def test_clean_tier_with_no_primary_match_returns_first_match(self):
+    def test_clean_tier_still_fans_out_to_all_matching_extractors(self):
+        # Tier no longer prunes the lineup: even a CLEAN-tier doc runs every
+        # matching extractor and the selection service votes on the winner.
         service = make_document_service(
             [
                 StubExtractor(
-                    'a', 'text-a', confidence=0.9, file_types=(FileType.PDF,)
+                    'a', 'text alpha', confidence=0.9, file_types=(FileType.PDF,)
                 ),
                 StubExtractor(
-                    'b', 'text-b', confidence=0.5, file_types=(FileType.PDF,)
+                    'b', 'text beta', confidence=0.5, file_types=(FileType.PDF,)
                 ),
             ],
         )
@@ -24,8 +26,8 @@ class TestSelectionAndHelpers(unittest.TestCase):
             return_value=Tier.CLEAN,
         ):
             result = service.extract(b'x', FileType.PDF)
-        # 'pymupdf' (the primary) isn't in our list → matches[:1] used.
-        self.assertEqual(result.markdown, 'text-a')
+        self.assertEqual(sorted(result.report.extractors_used), ['a', 'b'])
+        self.assertEqual(result.report.winning_extractor, 'a')
 
     def test_strip_bom_in_winning_output(self):
         service = make_document_service(
@@ -58,9 +60,9 @@ class TestSelectionAndHelpers(unittest.TestCase):
             ],
         )
         result = service.extract(b'x', FileType.PDF)
-        self.assertFalse(result.report['completeness_check'])
+        self.assertFalse(result.report.completeness_check)
         self.assertIn('extraction may be incomplete', result.markdown)
-        self.assertTrue(result.report['needs_review'])
+        self.assertTrue(result.report.needs_review)
 
 
 if __name__ == '__main__':

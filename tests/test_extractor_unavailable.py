@@ -1,6 +1,6 @@
 import unittest
 
-from doc_to_markdown_core_lib.data_layers.service.extractor_unavailable import (
+from doc_to_markdown_core_lib.error_handling.extractor_unavailable import (
     ExtractorUnavailable,
 )
 

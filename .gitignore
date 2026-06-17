@@ -21,6 +21,10 @@ __pycache__/
 build/
 dist/
 
+# COVERAGE
+.coverage
+.coverage.*
+
 # APP
 .hydra/
 .env
