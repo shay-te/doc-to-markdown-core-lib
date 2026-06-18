@@ -1,6 +1,9 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
 
+from doc_to_markdown_core_lib.data_layers.data.extraction.flagged_region import (
+    FlaggedRegion,
+)
 from doc_to_markdown_core_lib.data_layers.data.tier import Tier
 
 
@@ -15,7 +18,7 @@ class ExtractionReport:
     extractors_used: List[str]
     extractors_skipped: List[dict]
     languages_detected: List[str]
-    flagged_regions: List[dict]
+    flagged_regions: List[FlaggedRegion]
     completeness_check: bool
     winning_extractor: Optional[str]
     agreement_score: float

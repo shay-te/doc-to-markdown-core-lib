@@ -18,6 +18,9 @@ from doc_to_markdown_core_lib.data_layers.data.extraction.extraction_candidate i
 from doc_to_markdown_core_lib.data_layers.data.extraction.extraction_report import (
     ExtractionReport,
 )
+from doc_to_markdown_core_lib.data_layers.data.extraction.flagged_region import (
+    FlaggedRegion,
+)
 from doc_to_markdown_core_lib.data_layers.data.extraction.extraction_result import (
     ExtractionResult,
 )
@@ -74,14 +77,14 @@ class CandidateSelectionService(Service):
 
         if not completeness_ok:
             flagged_regions.append(
-                {
-                    'location': 'document-tail',
-                    'best_guess': '',
-                    'candidates': [
+                FlaggedRegion(
+                    location='document-tail',
+                    best_guess='',
+                    candidates=[
                         candidate.markdown for candidate in candidates
                     ],
-                    'reason': 'token-survival below floor',
-                }
+                    reason='token-survival below floor',
+                )
             )
             chosen_markdown = chosen_markdown + (
                 '\n\n⚠️[UNCERTAIN: extraction may be incomplete — see extraction_report.json]'
@@ -135,12 +138,12 @@ class CandidateSelectionService(Service):
             extractors_skipped=skipped,
             languages_detected=[],
             flagged_regions=[
-                {
-                    'location': 'document',
-                    'best_guess': '',
-                    'candidates': [],
-                    'reason': 'no extractor produced output',
-                }
+                FlaggedRegion(
+                    location='document',
+                    best_guess='',
+                    candidates=[],
+                    reason='no extractor produced output',
+                )
             ],
             completeness_check=False,
             winning_extractor=None,
@@ -209,7 +212,7 @@ def _completeness_ok(
     return True
 
 
-def _parse_flagged_regions(text: str) -> List[dict]:
+def _parse_flagged_regions(text: str) -> List[FlaggedRegion]:
     regions = []
     for match in _UNCERTAIN_RE.finditer(text or ''):
         best = (match.group('best') or '').strip()
@@ -224,11 +227,11 @@ def _parse_flagged_regions(text: str) -> List[dict]:
             else []
         )
         regions.append(
-            {
-                'location': f'offset {match.start()}',
-                'best_guess': best,
-                'candidates': cands,
-            }
+            FlaggedRegion(
+                location=f'offset {match.start()}',
+                best_guess=best,
+                candidates=cands,
+            )
         )
     return regions
 
