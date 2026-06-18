@@ -57,6 +57,9 @@ class CandidateSelectionService(Service):
         if not candidates:
             return self._build_empty_result(tier, used, skipped, filename)
 
+        # Highest confidence wins; ties resolve to the earliest (highest-
+        # priority) extractor, since candidates arrive in the orchestrator's
+        # fixed lineup order.
         winner = max(candidates, key=lambda candidate: candidate.confidence or 0.0)
         chosen_markdown = winner.markdown
         base_confidence = winner.confidence or 0.0
@@ -76,14 +79,13 @@ class CandidateSelectionService(Service):
         )
 
         if not completeness_ok:
+            # The full candidate markdowns already live on the result's
+            # ``candidates``; don't duplicate whole documents into the report.
             flagged_regions.append(
                 FlaggedRegion(
                     location='document-tail',
                     best_guess='',
-                    candidates=[
-                        candidate.markdown for candidate in candidates
-                    ],
-                    reason='token-survival below floor',
+                    reason='chosen output is missing consensus content',
                 )
             )
             chosen_markdown = chosen_markdown + (
@@ -167,11 +169,29 @@ class CandidateSelectionService(Service):
         )
 
 
+# Whitespace splitting collapses to one token per line for space-less
+# scripts (CJK, Thai), destroying overlap; tokenize those per character.
+_RANGES = (
+    r'\u3040-\u30ff'  # hiragana + katakana
+    r'\u3400-\u9fff'  # CJK ext-A + unified ideographs
+    r'\uac00-\ud7af'  # hangul
+    r'\uf900-\ufaff'  # CJK compatibility ideographs
+    r'\u0e00-\u0e7f'  # thai
+)
+_TOKEN_RE = re.compile(f'[{_RANGES}]|[^\\s{_RANGES}]+')
+
+
+def _tokenize(text: str) -> List[str]:
+    return _TOKEN_RE.findall(text or '')
+
+
 def _agreement(candidates: List[ExtractionCandidate]) -> float:
+    # One (or zero) candidate has nothing to disagree with → full agreement;
+    # the score then rides on the winner's own confidence.
     if len(candidates) <= 1:
         return 1.0
     token_sets = [
-        set((candidate.markdown or '').split()) for candidate in candidates
+        set(_tokenize(candidate.markdown)) for candidate in candidates
     ]
     pairs = 0
     total = 0.0
@@ -199,17 +219,35 @@ def _union_languages(candidates: List[ExtractionCandidate]) -> List[str]:
 def _completeness_ok(
     chosen: str, candidates: List[ExtractionCandidate], floor: float
 ) -> bool:
+    """Did the winner silently truncate? Measured against the *consensus* —
+    content at least two extractors produced — not against each candidate.
+    Comparing to every candidate would let one engine's junk (OCR noise,
+    headers/footers the clean winner dropped) flag the winner as incomplete.
+
+    Needs **3+ extractors** to mean anything: the winner is itself one of
+    the candidates, so with ≤2 it always covers the pairwise consensus
+    (the consensus ⊆ winner) and truncation is undetectable here — that
+    case is left to the agreement score, which still drops when the winner
+    disagrees with the other candidate. Known limitation: consensus can't
+    tell apart genuine content from boilerplate two engines both emit.
+    """
     if not candidates:
         return False
-    chosen_tokens = set(chosen.split())
+    if len(candidates) < 3:
+        return True
+    consensus = _consensus_tokens(candidates)
+    if not consensus:
+        return True
+    covered = len(set(_tokenize(chosen)) & consensus) / len(consensus)
+    return covered >= floor
+
+
+def _consensus_tokens(candidates: List[ExtractionCandidate]):
+    counts = {}
     for candidate in candidates:
-        candidate_tokens = set((candidate.markdown or '').split())
-        if not candidate_tokens:
-            continue
-        survived = len(chosen_tokens & candidate_tokens) / len(candidate_tokens)
-        if survived < floor:
-            return False
-    return True
+        for token in set(_tokenize(candidate.markdown)):
+            counts[token] = counts.get(token, 0) + 1
+    return {token for token, count in counts.items() if count >= 2}
 
 
 def _parse_flagged_regions(text: str) -> List[FlaggedRegion]:

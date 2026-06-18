@@ -45,21 +45,29 @@ class TestSelectionAndHelpers(unittest.TestCase):
         self.assertEqual(result.markdown, 'hello with bom')
 
     def test_completeness_failure_appends_tail_flag(self):
-        # Disjoint candidates — survival check fails → tail flag.
+        # Winner is highest-confidence but truncated; two other extractors
+        # agree on the full content → chosen misses the consensus → tail flag.
         service = make_document_service(
             [
                 StubExtractor(
-                    'a', 'apple', confidence=0.9, file_types=(FileType.PDF,)
+                    'a', 'alpha', confidence=0.9, file_types=(FileType.PDF,)
                 ),
                 StubExtractor(
                     'b',
-                    'zebra giraffe lion',
+                    'alpha beta gamma delta echo foxtrot',
                     confidence=0.8,
+                    file_types=(FileType.PDF,),
+                ),
+                StubExtractor(
+                    'c',
+                    'alpha beta gamma delta echo foxtrot',
+                    confidence=0.7,
                     file_types=(FileType.PDF,),
                 ),
             ],
         )
         result = service.extract(b'x', FileType.PDF)
+        self.assertEqual(result.report.winning_extractor, 'a')
         self.assertFalse(result.report.completeness_check)
         self.assertIn('extraction may be incomplete', result.markdown)
         self.assertTrue(result.report.needs_review)
