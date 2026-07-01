@@ -11,3 +11,4 @@ class FileType(str, enum.Enum):
     DOC = 'doc'
     DOCX = 'docx'
     IMAGE = 'image'
+    VIDEO = 'video'

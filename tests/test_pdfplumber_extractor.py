@@ -3,14 +3,14 @@ import types
 import unittest
 from unittest import mock
 
-from doc_to_markdown_core_lib.data_layers.service.extractor_unavailable import (
+from doc_to_markdown_core_lib.error_handling.extractor_unavailable import (
     ExtractorUnavailable,
 )
 from doc_to_markdown_core_lib.data_layers.service.extractors.pdf.pdfplumber_extractor import (
     PdfPlumberExtractor,
     _table_to_markdown as _plumber_table_to_md,
 )
-from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
+from doc_to_markdown_core_lib.data_layers.data.file_type import FileType
 from tests.patch_module import patch_module
 
 

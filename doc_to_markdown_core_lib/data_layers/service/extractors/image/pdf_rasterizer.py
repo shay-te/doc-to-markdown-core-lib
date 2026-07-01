@@ -1,10 +1,10 @@
 """Shared PDF → page-PNG rasterization for the OCR extractors."""
 from typing import Iterator, Tuple
 
-from doc_to_markdown_core_lib.data_layers.service.extractor_unavailable import (
+from doc_to_markdown_core_lib.error_handling.extractor_unavailable import (
     ExtractorUnavailable,
 )
-from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
+from doc_to_markdown_core_lib.data_layers.data.file_type import FileType
 
 DEFAULT_RASTER_DPI = 200
 

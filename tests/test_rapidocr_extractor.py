@@ -3,13 +3,13 @@ import types
 import unittest
 from unittest import mock
 
-from doc_to_markdown_core_lib.data_layers.service.extractor_unavailable import (
+from doc_to_markdown_core_lib.error_handling.extractor_unavailable import (
     ExtractorUnavailable,
 )
 from doc_to_markdown_core_lib.data_layers.service.extractors.image.rapidocr_extractor import (
     RapidOcrExtractor,
 )
-from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
+from doc_to_markdown_core_lib.data_layers.data.file_type import FileType
 from tests.make_fitz_module import make_fitz_module
 from tests.patch_module import patch_module
 

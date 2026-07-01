@@ -1,6 +1,6 @@
 import unittest
 
-from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
+from doc_to_markdown_core_lib.data_layers.data.file_type import FileType
 from tests.make_document_service import make_document_service
 from tests.stub_extractor import StubExtractor
 
@@ -25,7 +25,7 @@ class TestMultipleExtractorsPickWinner(unittest.TestCase):
         )
         result = service.extract(b'%PDF', FileType.PDF)
         self.assertEqual(result.markdown, 'apple banana carrot')
-        self.assertEqual(result.report['winning_extractor'], 'b')
+        self.assertEqual(result.report.winning_extractor, 'b')
 
     def test_disagreement_drives_needs_review(self):
         service = make_document_service(
@@ -46,7 +46,7 @@ class TestMultipleExtractorsPickWinner(unittest.TestCase):
             confidence_threshold=0.8,
         )
         result = service.extract(b'%PDF', FileType.PDF)
-        self.assertTrue(result.report['needs_review'])
+        self.assertTrue(result.report.needs_review)
 
 
 if __name__ == '__main__':

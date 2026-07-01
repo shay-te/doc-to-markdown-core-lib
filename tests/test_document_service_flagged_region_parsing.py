@@ -1,6 +1,6 @@
 import unittest
 
-from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
+from doc_to_markdown_core_lib.data_layers.data.file_type import FileType
 from tests.make_document_service import make_document_service
 from tests.stub_extractor import StubExtractor
 
@@ -19,11 +19,11 @@ class TestFlaggedRegionParsing(unittest.TestCase):
             ],
         )
         result = service.extract(b'%PDF', FileType.PDF)
-        regions = result.report['flagged_regions']
+        regions = result.report.flagged_regions
         self.assertEqual(len(regions), 1)
-        self.assertEqual(regions[0]['best_guess'], 'hello')
-        self.assertEqual(regions[0]['candidates'], ['hi', 'hey'])
-        self.assertTrue(result.report['needs_review'])
+        self.assertEqual(regions[0].best_guess, 'hello')
+        self.assertEqual(regions[0].candidates, ['hi', 'hey'])
+        self.assertTrue(result.report.needs_review)
 
 
 if __name__ == '__main__':

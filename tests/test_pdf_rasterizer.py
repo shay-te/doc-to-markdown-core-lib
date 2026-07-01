@@ -2,7 +2,7 @@ import sys
 import unittest
 from unittest import mock
 
-from doc_to_markdown_core_lib.data_layers.service.extractor_unavailable import (
+from doc_to_markdown_core_lib.error_handling.extractor_unavailable import (
     ExtractorUnavailable,
 )
 from doc_to_markdown_core_lib.data_layers.service.extractors.image.pdf_rasterizer import (

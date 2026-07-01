@@ -8,35 +8,24 @@ from core_lib.data_layers.service.service import Service
 from doc_to_markdown_core_lib.data_layers.service.candidate_selection_service import (
     CandidateSelectionService,
 )
-from doc_to_markdown_core_lib.data_layers.service.default_extractors import (
-    build_default_extractors,
-)
-from doc_to_markdown_core_lib.data_layers.service.extraction_candidate import (
+from doc_to_markdown_core_lib.data_layers.data.extraction.extraction_candidate import (
     ExtractionCandidate,
 )
-from doc_to_markdown_core_lib.data_layers.service.extraction_result import (
+from doc_to_markdown_core_lib.data_layers.data.extraction.extraction_result import (
     ExtractionResult,
 )
-from doc_to_markdown_core_lib.data_layers.service.extractor import Extractor
-from doc_to_markdown_core_lib.data_layers.service.extractor_unavailable import (
+from doc_to_markdown_core_lib.data_layers.service.extractors.extractor import Extractor
+from doc_to_markdown_core_lib.error_handling.extractor_unavailable import (
     ExtractorUnavailable,
 )
-from doc_to_markdown_core_lib.data_layers.service.file_type import FileType
-from doc_to_markdown_core_lib.data_layers.service.tier import Tier
-from doc_to_markdown_core_lib.data_layers.service.tier_detector import detect_tier
+from doc_to_markdown_core_lib.data_layers.data.file_type import FileType
+from doc_to_markdown_core_lib.data_layers.service.helpers import (
+    build_default_extractors,
+    detect_tier,
+)
 
 logger = logging.getLogger(__name__)
 
-
-# Clean-tier short-circuit: when the document is well-structured we
-# only run the file type's primary engine and skip the ensemble fan-out.
-_PRIMARY_EXTRACTOR_PER_TYPE = {
-    FileType.PDF: 'pymupdf',
-    FileType.DOCX: 'python-docx',
-    FileType.DOC: 'soffice',
-    FileType.TXT: 'plain-text',
-    FileType.MD: 'md-passthrough',
-}
 
 # Skip-reason strings stored in the run report; named so reviewers can
 # grep the report payload back to the branch that produced it.
@@ -92,13 +81,14 @@ class DocumentService(Service):
 
         The flow is intentionally linear so a reader can follow it
         top-to-bottom:
-            1. Classify the input's tier (``clean`` vs ``risky``).
-            2. Pick which extractors run for this file_type + tier.
+            1. Classify the input's tier (``clean`` vs ``risky``) — recorded
+               in the report as a signal; it does NOT prune the lineup.
+            2. Fan out to every extractor that handles this file_type.
             3. Run each one; bucket into candidates / skipped.
             4. Hand the candidates to the selection service to vote.
         """
         tier = detect_tier(content, file_type)
-        selected_extractors = self._select_extractors_for(file_type, tier)
+        selected_extractors = self._select_extractors_for(file_type)
 
         candidates: List[ExtractionCandidate] = []
         used_extractor_names: List[str] = []
@@ -157,40 +147,15 @@ class DocumentService(Service):
             return None, _REASON_EMPTY_RESULT
         return candidate, None
 
-    def _select_extractors_for(
-        self, file_type: FileType, tier: Tier,
-    ) -> List[Extractor]:
-        """Pick which extractors run for this document.
-
-        Three branches, in order:
-            * No extractor handles the file type → empty list. The
-              caller surfaces a "no candidates" report.
-            * :attr:`Tier.RISKY` → run every matching extractor and
-              let the selection service vote.
-            * :attr:`Tier.CLEAN` → run only the file type's declared
-              primary if it's registered; otherwise fall back to the
-              first matching extractor.
+    def _select_extractors_for(self, file_type: FileType) -> List[Extractor]:
+        """Every registered extractor that handles ``file_type`` runs —
+        the full ensemble always fans out and the selection service votes
+        on the most correct output (no per-tier short-circuit to a single
+        "primary" engine). Empty when nothing handles the type, in which
+        case the caller surfaces a "no candidates" report.
         """
-        matching_extractors = [
+        return [
             extractor
             for extractor in self._extractors
             if file_type in extractor.file_types
         ]
-        if not matching_extractors:
-            return []
-        if tier != Tier.CLEAN:
-            return matching_extractors
-
-        primary_name = _PRIMARY_EXTRACTOR_PER_TYPE.get(file_type)
-        if primary_name is not None:
-            primary_extractor = next(
-                (
-                    extractor
-                    for extractor in matching_extractors
-                    if extractor.name == primary_name
-                ),
-                None,
-            )
-            if primary_extractor is not None:
-                return [primary_extractor]
-        return matching_extractors[:1]

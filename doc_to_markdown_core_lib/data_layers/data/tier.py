@@ -4,7 +4,7 @@ import enum
 class Tier(str, enum.Enum):
     """Pre-flight document classification.
 
-    The tier is a routing hint produced by :func:`tier_detector.detect_tier`
+    The tier is a routing hint produced by :func:`helpers.detect_tier`
     and consumed by :meth:`DocumentService.extract` to decide whether
     to run a single extractor or fan out across the full ensemble.
 
