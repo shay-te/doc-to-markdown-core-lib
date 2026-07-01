@@ -13,11 +13,32 @@ cluttered with:
 from typing import List, Tuple
 
 from doc_to_markdown_core_lib.data_layers.service.extractors.extractor import Extractor
+from doc_to_markdown_core_lib.data_layers.service.extractors.doc.abiword_extractor import (
+    AbiwordExtractor,
+)
+from doc_to_markdown_core_lib.data_layers.service.extractors.doc.antiword_extractor import (
+    AntiwordExtractor,
+)
+from doc_to_markdown_core_lib.data_layers.service.extractors.doc.catdoc_extractor import (
+    CatdocExtractor,
+)
 from doc_to_markdown_core_lib.data_layers.service.extractors.doc.soffice_extractor import (
     SofficeExtractor,
 )
 from doc_to_markdown_core_lib.data_layers.service.extractors.doc.textract_extractor import (
     TextractExtractor,
+)
+from doc_to_markdown_core_lib.data_layers.service.extractors.doc.tika_extractor import (
+    TikaExtractor,
+)
+from doc_to_markdown_core_lib.data_layers.service.extractors.doc.wvtext_extractor import (
+    WvTextExtractor,
+)
+from doc_to_markdown_core_lib.data_layers.service.extractors.docx.docx2python_extractor import (
+    Docx2pythonExtractor,
+)
+from doc_to_markdown_core_lib.data_layers.service.extractors.docx.docx2txt_extractor import (
+    Docx2txtExtractor,
 )
 from doc_to_markdown_core_lib.data_layers.service.extractors.docx.docx_extractor import (
     DocxExtractor,
@@ -25,8 +46,23 @@ from doc_to_markdown_core_lib.data_layers.service.extractors.docx.docx_extractor
 from doc_to_markdown_core_lib.data_layers.service.extractors.docx.mammoth_extractor import (
     MammothExtractor,
 )
+from doc_to_markdown_core_lib.data_layers.service.extractors.docx.pandoc_extractor import (
+    PandocExtractor,
+)
+from doc_to_markdown_core_lib.data_layers.service.extractors.image.doctr_extractor import (
+    DocTrExtractor,
+)
 from doc_to_markdown_core_lib.data_layers.service.extractors.image.easyocr_extractor import (
     EasyOcrExtractor,
+)
+from doc_to_markdown_core_lib.data_layers.service.extractors.image.kerasocr_extractor import (
+    KerasOcrExtractor,
+)
+from doc_to_markdown_core_lib.data_layers.service.extractors.image.ocrmac_extractor import (
+    OcrMacExtractor,
+)
+from doc_to_markdown_core_lib.data_layers.service.extractors.image.paddleocr_extractor import (
+    PaddleOcrExtractor,
 )
 from doc_to_markdown_core_lib.data_layers.service.extractors.image.rapidocr_extractor import (
     RapidOcrExtractor,
@@ -110,8 +146,16 @@ def build_default_extractors(
         TxtExtractor(),
         DocxExtractor(),
         MammothExtractor(),
+        Docx2txtExtractor(),
+        Docx2pythonExtractor(),
+        PandocExtractor(),
         TextractExtractor(),
         SofficeExtractor(),
+        AbiwordExtractor(),
+        TikaExtractor(),
+        AntiwordExtractor(),
+        CatdocExtractor(),
+        WvTextExtractor(),
         PyMuPdfExtractor(),
         PdfPlumberExtractor(),
         PdfMinerExtractor(),
@@ -121,4 +165,8 @@ def build_default_extractors(
         TesseractExtractor(languages=list(ocr_languages)),
         EasyOcrExtractor(),
         RapidOcrExtractor(),
+        PaddleOcrExtractor(),
+        DocTrExtractor(),
+        OcrMacExtractor(),
+        KerasOcrExtractor(),
     ]

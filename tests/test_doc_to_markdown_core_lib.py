@@ -59,7 +59,7 @@ class TestDocToMarkdownCoreLib(unittest.TestCase):
             for extractor in lib.document._extractors
             if isinstance(extractor, TesseractExtractor)
         ]
-        return tesseract_extractors[0]._languages
+        return tesseract_extractors[0]._languages()
 
 
 if __name__ == '__main__':
