@@ -34,6 +34,10 @@ _UNCERTAIN_RE = re.compile(
 
 _COMPLETENESS_TOKEN_FLOOR = 0.6
 
+# Synthetic winner assembled page-by-page from the real candidates.
+MERGE_EXTRACTOR_NAME = 'per_page_merge'
+_PAGE_MARKER_RE = re.compile(r'<!-- page (\d+) -->')
+
 
 class CandidateSelectionService(Service):
     """Stateless: picks the highest-confidence candidate, then
@@ -57,18 +61,26 @@ class CandidateSelectionService(Service):
         if not candidates:
             return self._build_empty_result(tier, used, skipped, filename)
 
+        # Maximum accuracy: synthesize a per-page best-of across the
+        # page-marked candidates and let it compete in the vote. Each page is
+        # the version the ensemble corroborates most (text for text pages, OCR
+        # for image-only pages), so the merge is normally the winner.
+        pool = list(candidates)
+        merged = _merge_pages(candidates)
+        if merged is not None:
+            pool.append(merged)
+
         # Highest confidence wins; but confidence saturates at 1.0 for any
         # real multi-page doc, so ties break toward the most *corroborated*
         # output — the candidate sharing the most tokens with its peers. A
-        # noisy OCR that agrees with no one can't win on lineup order, and the
-        # most complete extraction (text layer + OCR of image-only pages) does.
+        # noisy OCR that agrees with no one can't win on lineup order.
         winner = max(
-            candidates,
+            pool,
             key=lambda candidate: (
                 candidate.confidence or 0.0,
                 _corroborated_size(
                     candidate,
-                    [other for other in candidates if other is not candidate],
+                    [other for other in pool if other is not candidate],
                 ),
             ),
         )
@@ -196,6 +208,13 @@ def _tokenize(text: str) -> List[str]:
     return _TOKEN_RE.findall(text or '')
 
 
+def _corroborated_token_count(tokens: set, other_token_sets: List[set]) -> int:
+    corroborated = set()
+    for other in other_token_sets:
+        corroborated |= tokens & other
+    return len(corroborated)
+
+
 def _corroborated_size(
     candidate: ExtractionCandidate, others: List[ExtractionCandidate]
 ) -> int:
@@ -203,11 +222,80 @@ def _corroborated_size(
     produced. Rewards *complete* output (covering more real content) while
     ignoring solo noise, so it breaks confidence ties toward the extraction
     the ensemble corroborates most."""
-    tokens = set(_tokenize(candidate.markdown))
-    corroborated = set()
-    for other in others:
-        corroborated |= tokens & set(_tokenize(other.markdown))
-    return len(corroborated)
+    return _corroborated_token_count(
+        set(_tokenize(candidate.markdown)),
+        [set(_tokenize(other.markdown)) for other in others],
+    )
+
+
+def _split_pages(markdown: str):
+    """``{page_number: text}`` for a page-marked candidate, else ``None``
+    (whole-doc-only extractor). The marker is the shared
+    ``<!-- page N -->`` every paged extractor emits."""
+    matches = list(_PAGE_MARKER_RE.finditer(markdown or ''))
+    if not matches:
+        return None
+    pages = {}
+    for index, match in enumerate(matches):
+        end = (
+            matches[index + 1].start()
+            if index + 1 < len(matches)
+            else len(markdown)
+        )
+        pages[int(match.group(1))] = markdown[match.end():end].strip()
+    return pages
+
+
+def _best_page_version(versions: List[str]) -> str:
+    """The version of one page the other versions corroborate most (ties →
+    longer): text pages agree among text extractors, image pages among OCR."""
+    if len(versions) == 1:
+        return versions[0]
+    token_sets = [set(_tokenize(version)) for version in versions]
+    best_index = max(
+        range(len(versions)),
+        key=lambda index: (
+            _corroborated_token_count(
+                token_sets[index],
+                [
+                    token_sets[other]
+                    for other in range(len(versions))
+                    if other != index
+                ],
+            ),
+            len(versions[index]),
+        ),
+    )
+    return versions[best_index]
+
+
+def _merge_pages(candidates: List[ExtractionCandidate]):
+    """Best-of-pages: assemble each page from the extractor the ensemble
+    corroborates most on that page. Returns a synthetic candidate, or
+    ``None`` when fewer than two candidates carry page markers."""
+    paged = [
+        pages
+        for pages in (_split_pages(candidate.markdown) for candidate in candidates)
+        if pages
+    ]
+    if len(paged) < 2:
+        return None
+    page_numbers = sorted({number for pages in paged for number in pages})
+    parts = []
+    for number in page_numbers:
+        versions = [pages[number] for pages in paged if number in pages]
+        parts.append(f'<!-- page {number} -->\n\n{_best_page_version(versions)}')
+    markdown = '\n\n'.join(parts).strip()
+    # Best-of each page → at least as trustworthy as its best source. Inherit
+    # the top confidence rather than deriving from length, which would
+    # under-rate a short merged doc against its own inputs.
+    confidence = max((candidate.confidence or 0.0) for candidate in candidates)
+    return ExtractionCandidate(
+        extractor=MERGE_EXTRACTOR_NAME,
+        markdown=markdown,
+        confidence=confidence,
+        languages=_union_languages(candidates),
+    )
 
 
 def _agreement(candidates: List[ExtractionCandidate]) -> float:

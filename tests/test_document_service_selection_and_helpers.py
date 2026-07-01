@@ -68,6 +68,73 @@ class TestSelectionAndHelpers(unittest.TestCase):
         self.assertIn(result.report.winning_extractor, ('pymupdf', 'pdfplumber'))
         self.assertNotEqual(result.report.winning_extractor, 'rapidocr')
 
+    def test_image_ocr_ensemble_picks_corroborated_winner(self):
+        # IMAGE has 3 OCR engines and no pages: the corroborated best-of (same
+        # selection as PDF, minus the page merge) picks the agreed reading,
+        # even though the noisy engine is registered first.
+        clean = 'the quick brown fox jumps over'
+        service = make_document_service(
+            [
+                StubExtractor(
+                    'rapidocr', 'teh qiuck brovvn fx jmups ovr',
+                    confidence=1.0, file_types=(FileType.IMAGE,),
+                ),
+                StubExtractor(
+                    'tesseract', clean, confidence=1.0,
+                    file_types=(FileType.IMAGE,),
+                ),
+                StubExtractor(
+                    'easyocr', clean, confidence=1.0,
+                    file_types=(FileType.IMAGE,),
+                ),
+            ],
+        )
+        result = service.extract(b'\x89PNG', FileType.IMAGE)
+        self.assertIn(result.report.winning_extractor, ('tesseract', 'easyocr'))
+
+    def test_docx_ensemble_picks_corroborated_winner(self):
+        # DOCX has 5 extractors: merit-based best-of, not lineup order.
+        body = 'introduction methods results discussion conclusion references'
+        service = make_document_service(
+            [
+                StubExtractor(
+                    'python-docx', 'garbled zzz qqq noise', confidence=1.0,
+                    file_types=(FileType.DOCX,),
+                ),
+                StubExtractor(
+                    'mammoth', body, confidence=1.0, file_types=(FileType.DOCX,)
+                ),
+                StubExtractor(
+                    'textract', body, confidence=1.0, file_types=(FileType.DOCX,)
+                ),
+                StubExtractor(
+                    'soffice', body, confidence=1.0, file_types=(FileType.DOCX,)
+                ),
+            ],
+        )
+        result = service.extract(b'PK\x03\x04', FileType.DOCX)
+        self.assertNotEqual(result.report.winning_extractor, 'python-docx')
+
+    def test_per_page_merge_wins_and_assembles_best_pages(self):
+        # Two page-marked candidates: the text extractor nails the text page
+        # but misses the image page; OCR nails the image page but is noisier on
+        # text. The synthesized per-page merge takes the best of each and wins.
+        text = StubExtractor(
+            'pymupdf',
+            '<!-- page 1 -->\n\nclean body text\n\n<!-- page 2 -->\n\n',
+            file_types=(FileType.PDF,),
+        )
+        ocr = StubExtractor(
+            'rapidocr',
+            '<!-- page 1 -->\n\nclean body test\n\n'
+            '<!-- page 2 -->\n\nNEWSPAPER HEADLINE',
+            file_types=(FileType.PDF,),
+        )
+        result = make_document_service([text, ocr]).extract(b'x', FileType.PDF)
+        self.assertEqual(result.report.winning_extractor, 'per_page_merge')
+        self.assertIn('clean body text', result.markdown)  # text page from text
+        self.assertIn('NEWSPAPER HEADLINE', result.markdown)  # image page from OCR
+
     def test_completeness_failure_appends_tail_flag(self):
         # Winner is highest-confidence but truncated; two other extractors
         # agree on the full content → chosen misses the consensus → tail flag.

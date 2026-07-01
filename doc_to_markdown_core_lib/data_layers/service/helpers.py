@@ -37,9 +37,6 @@ from doc_to_markdown_core_lib.data_layers.service.extractors.image.tesseract_ext
 from doc_to_markdown_core_lib.data_layers.service.extractors.md.md_extractor import (
     MdExtractor,
 )
-from doc_to_markdown_core_lib.data_layers.service.extractors.pdf.hybrid_pdf_extractor import (
-    HybridPdfExtractor,
-)
 from doc_to_markdown_core_lib.data_layers.service.extractors.pdf.markitdown_extractor import (
     MarkItDownExtractor,
 )
@@ -115,7 +112,6 @@ def build_default_extractors(
         MammothExtractor(),
         TextractExtractor(),
         SofficeExtractor(),
-        HybridPdfExtractor(TesseractExtractor(languages=list(ocr_languages))),
         PyMuPdfExtractor(),
         PdfPlumberExtractor(),
         PdfMinerExtractor(),
