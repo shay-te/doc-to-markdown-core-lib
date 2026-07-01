@@ -44,6 +44,30 @@ class TestSelectionAndHelpers(unittest.TestCase):
         self.assertFalse(result.markdown_bytes.startswith(b'\xef\xbb\xbf'))
         self.assertEqual(result.markdown, 'hello with bom')
 
+    def test_saturated_tie_breaks_toward_corroborated_output(self):
+        # All three saturate confidence at 1.0. Two text extractors agree; a
+        # noisy OCR shares nothing. Despite the OCR being registered FIRST,
+        # the corroborated output wins — selection is by merit, not lineup
+        # order (guards the Finding-A fix).
+        shared = 'alpha beta gamma delta echo foxtrot golf hotel india juliet'
+        service = make_document_service(
+            [
+                StubExtractor(
+                    'rapidocr', 'zzz yyy xxx www', confidence=1.0,
+                    file_types=(FileType.PDF,),
+                ),
+                StubExtractor(
+                    'pymupdf', shared, confidence=1.0, file_types=(FileType.PDF,)
+                ),
+                StubExtractor(
+                    'pdfplumber', shared, confidence=1.0, file_types=(FileType.PDF,)
+                ),
+            ],
+        )
+        result = service.extract(b'x', FileType.PDF)
+        self.assertIn(result.report.winning_extractor, ('pymupdf', 'pdfplumber'))
+        self.assertNotEqual(result.report.winning_extractor, 'rapidocr')
+
     def test_completeness_failure_appends_tail_flag(self):
         # Winner is highest-confidence but truncated; two other extractors
         # agree on the full content → chosen misses the consensus → tail flag.

@@ -57,10 +57,21 @@ class CandidateSelectionService(Service):
         if not candidates:
             return self._build_empty_result(tier, used, skipped, filename)
 
-        # Highest confidence wins; ties resolve to the earliest (highest-
-        # priority) extractor, since candidates arrive in the orchestrator's
-        # fixed lineup order.
-        winner = max(candidates, key=lambda candidate: candidate.confidence or 0.0)
+        # Highest confidence wins; but confidence saturates at 1.0 for any
+        # real multi-page doc, so ties break toward the most *corroborated*
+        # output — the candidate sharing the most tokens with its peers. A
+        # noisy OCR that agrees with no one can't win on lineup order, and the
+        # most complete extraction (text layer + OCR of image-only pages) does.
+        winner = max(
+            candidates,
+            key=lambda candidate: (
+                candidate.confidence or 0.0,
+                _corroborated_size(
+                    candidate,
+                    [other for other in candidates if other is not candidate],
+                ),
+            ),
+        )
         chosen_markdown = winner.markdown
         base_confidence = winner.confidence or 0.0
         winning_extractor = winner.extractor
@@ -183,6 +194,20 @@ _TOKEN_RE = re.compile(f'[{_RANGES}]|[^\\s{_RANGES}]+')
 
 def _tokenize(text: str) -> List[str]:
     return _TOKEN_RE.findall(text or '')
+
+
+def _corroborated_size(
+    candidate: ExtractionCandidate, others: List[ExtractionCandidate]
+) -> int:
+    """How many of this candidate's tokens at least one other extractor also
+    produced. Rewards *complete* output (covering more real content) while
+    ignoring solo noise, so it breaks confidence ties toward the extraction
+    the ensemble corroborates most."""
+    tokens = set(_tokenize(candidate.markdown))
+    corroborated = set()
+    for other in others:
+        corroborated |= tokens & set(_tokenize(other.markdown))
+    return len(corroborated)
 
 
 def _agreement(candidates: List[ExtractionCandidate]) -> float:

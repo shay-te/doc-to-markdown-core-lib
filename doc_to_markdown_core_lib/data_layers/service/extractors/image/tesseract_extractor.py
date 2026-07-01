@@ -11,6 +11,10 @@ from doc_to_markdown_core_lib.data_layers.service.extractors.extractor import Ex
 from doc_to_markdown_core_lib.error_handling.extractor_unavailable import (
     ExtractorUnavailable,
 )
+from doc_to_markdown_core_lib.data_layers.service.extractors.image.pdf_rasterizer import (
+    DEFAULT_RASTER_DPI,
+    rasterize_pdf_pages,
+)
 from doc_to_markdown_core_lib.data_layers.data.file_type import FileType
 
 
@@ -22,7 +26,11 @@ class TesseractExtractor(Extractor):
     name = 'tesseract'
     file_types = (FileType.PDF, FileType.IMAGE)
 
-    def __init__(self, languages: Optional[List[str]] = None, dpi: int = 200):
+    def __init__(
+        self,
+        languages: Optional[List[str]] = None,
+        dpi: int = DEFAULT_RASTER_DPI,
+    ):
         self._languages = list(languages or ['eng'])
         self._dpi = dpi
 
@@ -54,23 +62,13 @@ class TesseractExtractor(Extractor):
             )
 
         if file_type == FileType.PDF:
-            try:
-                import fitz
-            except ImportError as import_error:
-                raise ExtractorUnavailable(
-                    'PyMuPDF (fitz) required to rasterize PDF pages for tesseract'
-                ) from import_error
-
             parts = []
-            doc = fitz.open(stream=content, filetype=FileType.PDF)
-            try:
-                for page_number, page in enumerate(doc, start=1):
-                    pix = page.get_pixmap(dpi=self._dpi)
-                    img = Image.open(io.BytesIO(pix.tobytes('png')))
-                    text = (pytesseract.image_to_string(img, lang=lang_arg) or '').strip()
-                    parts.append(f'<!-- page {page_number} -->\n\n{text}')
-            finally:
-                doc.close()
+            for page_number, png_bytes in rasterize_pdf_pages(
+                content, dpi=self._dpi
+            ):
+                img = Image.open(io.BytesIO(png_bytes))
+                text = (pytesseract.image_to_string(img, lang=lang_arg) or '').strip()
+                parts.append(f'<!-- page {page_number} -->\n\n{text}')
 
             markdown = '\n\n'.join(parts).strip()
             confidence = min(
